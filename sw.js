@@ -1,11 +1,12 @@
-const CACHE_NAME = "study-app-pwa-v2";
+const CACHE_NAME = "study-app-pwa-v3";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./404.html",
+  "./sync.config.js",
   "./manifest.webmanifest",
-  "./icons/icon.svg",
-  "./icons/icon.svg",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png",
   "./subjects/doshitsu1.js",
   "./subjects/doshitsu3.js",
   "./subjects/kozo1.js",
