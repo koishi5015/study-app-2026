@@ -1,0 +1,2132 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#102033">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study 2026">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<title>テスト勉強 2026前期</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<style>
+:root{
+  --c-bg:#f6f7f9; --c-card:#ffffff; --c-text:#1e2430; --c-sub:#6b7280;
+  --c-accent:#2563eb; --c-accent-soft:#dbeafe; --c-line:#d1d5db;
+  --c-fill1:#dbeafe; --c-fill2:#fef3c7; --c-ok:#16a34a; --c-ng:#dc2626;
+  --c-warn:#d97706; --shadow:0 1px 3px rgba(0,0,0,.08),0 4px 12px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --c-bg:#12151c; --c-card:#1c212b; --c-text:#e7eaf0; --c-sub:#9aa3b2;
+    --c-accent:#60a5fa; --c-accent-soft:#1e3a5f; --c-line:#374151;
+    --c-fill1:#1e3a5f; --c-fill2:#4a3a12; --shadow:0 1px 3px rgba(0,0,0,.4);
+  }
+}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Hiragino Sans","Yu Gothic UI","Noto Sans JP",sans-serif;background:var(--c-bg);color:var(--c-text);line-height:1.75;padding-bottom:60px}
+#app{max-width:860px;margin:0 auto;padding:16px}
+a{color:var(--c-accent);text-decoration:none}
+.card{background:var(--c-card);border-radius:14px;padding:18px;margin:12px 0;box-shadow:var(--shadow)}
+.topbar{display:flex;align-items:center;gap:10px;padding:8px 0;flex-wrap:wrap}
+.topbar h1{font-size:1.15rem}
+.crumb{font-size:.85rem;color:var(--c-sub)}
+button{font-family:inherit;font-size:.92rem;border:none;border-radius:10px;padding:9px 16px;cursor:pointer;background:var(--c-accent-soft);color:var(--c-text)}
+button.primary{background:var(--c-accent);color:#fff}
+button.ghost{background:transparent;border:1px solid var(--c-line)}
+button:active{transform:scale(.97)}
+.bar{height:8px;border-radius:4px;background:var(--c-line);overflow:hidden;margin:6px 0}
+.bar>div{height:100%;background:var(--c-accent);transition:width .3s}
+.tag{display:inline-block;font-size:.72rem;padding:2px 9px;border-radius:99px;background:var(--c-accent-soft);margin-right:6px}
+.tag.p3{background:#fecaca;color:#7f1d1d}.tag.p2{background:var(--c-fill2);color:#7c4a03}
+@media (prefers-color-scheme: dark){.tag.p3{background:#5f1e1e;color:#fca5a5}.tag.p2{background:#4a3a12;color:#fcd34d}}
+.subcard{cursor:pointer;transition:transform .12s}
+.subcard:hover{transform:translateY(-2px)}
+.subcard h2{font-size:1.05rem;margin-bottom:2px}
+.meta{font-size:.8rem;color:var(--c-sub)}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:4px 0;position:sticky;top:0;background:var(--c-bg);z-index:5}
+.tabs button{white-space:nowrap;font-size:.85rem;padding:8px 14px}
+.tabs button.on{background:var(--c-accent);color:#fff}
+.gl{border-bottom:2px dotted var(--c-accent);cursor:pointer;font-weight:600}
+.section-body p{margin:.5em 0}
+.section-body table{border-collapse:collapse;margin:.5em 0;font-size:.9rem}
+.section-body td,.section-body th{border:1px solid var(--c-line);padding:4px 10px}
+.svgwrap{margin:12px auto;text-align:center}
+.svgwrap svg{max-width:100%;height:auto}
+.fcard{border:1px solid var(--c-line);border-radius:12px;padding:14px;margin:10px 0}
+.fcard .fname{font-weight:700;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.flatex{padding:14px 6px;text-align:center;font-size:1.12rem;overflow-x:auto}
+.vars{font-size:.85rem;border-collapse:collapse;width:100%}
+.vars td{border-top:1px solid var(--c-line);padding:4px 8px}
+.whenbox{background:var(--c-accent-soft);border-radius:8px;padding:8px 12px;font-size:.87rem;margin:8px 0}
+.stage{font-size:.72rem;padding:2px 8px;border-radius:99px;background:var(--c-line)}
+.stage.s1{background:var(--c-fill2)}.stage.s2{background:var(--c-accent-soft)}.stage.s3{background:var(--c-ok);color:#fff}
+.choice{display:block;width:100%;text-align:left;margin:6px 0;background:var(--c-card);border:1.5px solid var(--c-line);border-radius:10px;padding:11px 14px}
+.choice.ok{border-color:var(--c-ok);background:color-mix(in srgb,var(--c-ok) 12%,var(--c-card))}
+.choice.ng{border-color:var(--c-ng);background:color-mix(in srgb,var(--c-ng) 12%,var(--c-card))}
+.expl{background:var(--c-accent-soft);border-radius:10px;padding:10px 14px;margin-top:8px;font-size:.9rem}
+.stepbox{border-left:3px solid var(--c-accent);padding:8px 14px;margin:8px 0;background:var(--c-card);border-radius:0 10px 10px 0;box-shadow:var(--shadow)}
+.stepbox .slabel{font-weight:700;font-size:.85rem;color:var(--c-accent)}
+.qtext{font-weight:600;margin-bottom:8px}
+.rowbtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.popup{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.popup .inner{background:var(--c-card);border-radius:18px 18px 0 0;padding:22px;max-width:640px;width:100%;max-height:70vh;overflow-y:auto}
+.popup h3{margin-bottom:6px}
+.mini{font-size:.8rem;color:var(--c-sub)}
+.statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:10px 0}
+.statgrid .st{background:var(--c-bg);border-radius:10px;padding:10px;text-align:center}
+.st b{font-size:1.3rem}
+.sheet-f{border-bottom:1px solid var(--c-line);padding:10px 0}
+.weak{color:var(--c-ng);font-weight:700}
+.katex-display{overflow-x:auto;overflow-y:hidden;padding:4px 0}
+.notice{font-size:.85rem;color:var(--c-sub);text-align:center;padding:20px}
+
+input,select,textarea{font-family:inherit;font-size:.92rem;color:var(--c-text);background:var(--c-card);border:1px solid var(--c-line);border-radius:10px;padding:8px 10px}
+textarea{width:100%;min-height:74px;resize:vertical;margin-top:8px}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0}
+.spacer{flex:1}
+.examline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px}
+.examline input{max-width:150px}
+.dategrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px}
+.date-row{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--c-line);border-radius:10px;padding:10px}
+.date-row input{width:145px}
+.todo-list{display:grid;gap:8px;margin-top:10px}
+.task{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--c-line);border-radius:10px;padding:10px;background:var(--c-card)}
+.task-main{min-width:0}
+.task-title{font-weight:700}
+.task-sub{font-size:.8rem;color:var(--c-sub)}
+.task button{flex-shrink:0}
+.calendar{display:grid;gap:10px;margin-top:10px}
+.daycard{border:1px solid var(--c-line);border-radius:12px;padding:12px;background:var(--c-card)}
+.dayhead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--c-line);padding-bottom:6px;margin-bottom:8px}
+.planitem{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed var(--c-line)}
+.planitem:last-child{border-bottom:none}
+.searchbox{width:100%;font-size:1rem;margin:8px 0}
+.result{border-bottom:1px solid var(--c-line);padding:10px 0}
+.mistake{border-left:3px solid var(--c-warn);padding:10px 12px;margin:8px 0;background:var(--c-card);border-radius:0 10px 10px 0;box-shadow:var(--shadow)}
+.diffbox,.hintbox{background:var(--c-bg);border:1px solid var(--c-line);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:.88rem}
+.filterbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
+.filterbar button.on{background:var(--c-accent);color:#fff}
+
+.simgrid{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:12px;align-items:start}
+.simcontrols{position:sticky;top:52px}
+.simctrl{display:block;margin:10px 0}
+.simctrl>span{display:block;font-size:.82rem;color:var(--c-sub);margin-bottom:4px}
+.ctrlrow{display:grid;grid-template-columns:1fr 82px 42px;gap:7px;align-items:center}
+.ctrlrow input[type="range"]{padding:0}
+.ctrlrow em{font-style:normal;font-size:.78rem;color:var(--c-sub)}
+.selectrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.svgpanel{border:1px solid var(--c-line);border-radius:12px;padding:10px;background:var(--c-bg);margin-top:10px;overflow:hidden}
+.svgpanel svg{width:100%;height:auto;display:block}
+.metricgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin-top:10px}
+.metric{border:1px solid var(--c-line);border-radius:10px;padding:9px;background:var(--c-card)}
+.metric b{display:block;font-size:1.05rem}
+.diagram-title{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.diagram-title b{font-size:.95rem}
+.beam-readout{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.beam-readout .tag{margin-right:0}
+.beamnote{font-size:.8rem;color:var(--c-sub);margin-top:8px}
+.beamsvg{cursor:crosshair}
+
+.beamtools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin:8px 0}
+.beamtools button{padding:8px 10px}
+.beamtools button.on{background:var(--c-accent);color:#fff}
+.itemlist{display:grid;gap:8px;margin-top:10px}
+.itemrow{border:1px solid var(--c-line);border-radius:10px;padding:9px;background:var(--c-bg)}
+.itemrow-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px}
+.itemkind{font-weight:700;font-size:.9rem}
+.itemgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.itemgrid label span{display:block;font-size:.72rem;color:var(--c-sub);margin-bottom:2px}
+.itemgrid input{width:100%}
+.warnbox{border:1px solid var(--c-warn);background:color-mix(in srgb,var(--c-warn) 12%,var(--c-card));border-radius:10px;padding:9px 11px;margin-top:8px;font-size:.84rem}
+@media (max-width:760px){
+  .beamtools{grid-template-columns:1fr}
+  .itemgrid{grid-template-columns:1fr}
+}
+@media (max-width:760px){
+  .simgrid{grid-template-columns:1fr}
+  .simcontrols{position:static}
+  .ctrlrow{grid-template-columns:1fr 76px 36px}
+}
+
+.empty{border:1px dashed var(--c-line);border-radius:12px;padding:14px;text-align:center;color:var(--c-sub)}
+@media (max-width:640px){
+  #app{padding:12px}
+  .task,.planitem,.date-row{align-items:stretch;flex-direction:column}
+  .task button,.planitem button{width:100%}
+}
+
+
+/* --- design refresh 2026 --- */
+:root{
+  --c-bg:#f4f7fb;
+  --c-card:rgba(255,255,255,.88);
+  --c-card-solid:#ffffff;
+  --c-text:#172033;
+  --c-sub:#687385;
+  --c-accent:#2563eb;
+  --c-accent-soft:#e7eefc;
+  --c-line:#d9e0ea;
+  --c-fill1:#dbeafe;
+  --c-fill2:#fff1bf;
+  --c-ok:#15803d;
+  --c-ng:#dc2626;
+  --c-warn:#b45309;
+  --c-ink:#101828;
+  --radius:8px;
+  --shadow:0 1px 1px rgba(16,24,40,.04),0 10px 30px rgba(16,24,40,.08);
+  --shadow-hover:0 2px 4px rgba(16,24,40,.06),0 16px 42px rgba(16,24,40,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --c-bg:#10141b;
+    --c-card:rgba(25,31,42,.9);
+    --c-card-solid:#1b2230;
+    --c-text:#edf2f8;
+    --c-sub:#9ca8ba;
+    --c-accent:#7db2ff;
+    --c-accent-soft:#172b48;
+    --c-line:#303b4e;
+    --c-fill1:#172b48;
+    --c-fill2:#3e3316;
+    --c-ink:#f5f7fb;
+    --shadow:0 1px 1px rgba(0,0,0,.28),0 12px 36px rgba(0,0,0,.28);
+    --shadow-hover:0 2px 4px rgba(0,0,0,.32),0 18px 48px rgba(0,0,0,.34);
+  }
+}
+body{
+  min-height:100vh;
+  overflow-x:hidden;
+  background:
+    linear-gradient(135deg, rgba(37,99,235,.08), transparent 34%),
+    linear-gradient(235deg, rgba(21,128,61,.07), transparent 38%),
+    var(--c-bg);
+  letter-spacing:0;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(23,32,51,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23,32,51,.045) 1px, transparent 1px);
+  background-size:32px 32px;
+  mask-image:linear-gradient(to bottom, rgba(0,0,0,.62), transparent 82%);
+}
+#app{
+  max-width:1120px;
+  padding:18px 20px 72px;
+  position:relative;
+}
+.card{
+  border-radius:var(--radius);
+  border:1px solid color-mix(in srgb,var(--c-line) 86%,transparent);
+  background:var(--c-card);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(14px);
+}
+.topbar.appbar{
+  position:sticky;
+  top:0;
+  z-index:12;
+  margin:-18px -20px 14px;
+  padding:12px 20px;
+  background:color-mix(in srgb,var(--c-bg) 82%,transparent);
+  border-bottom:1px solid color-mix(in srgb,var(--c-line) 78%,transparent);
+  backdrop-filter:blur(16px);
+}
+.topbar h1{font-size:1.05rem;letter-spacing:0;font-weight:800}
+button{
+  border-radius:var(--radius);
+  border:1px solid transparent;
+  font-weight:700;
+  transition:transform .12s ease,box-shadow .12s ease,background .12s ease,border-color .12s ease;
+}
+button:hover{box-shadow:0 6px 16px rgba(16,24,40,.09)}
+button.ghost{background:color-mix(in srgb,var(--c-card-solid) 74%,transparent)}
+input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)}
+.hero-panel{
+  display:grid;
+  grid-template-columns:minmax(0,1.25fr) minmax(300px,.75fr);
+  gap:18px;
+  align-items:stretch;
+  margin:10px 0 16px;
+  padding:22px;
+  color:#f8fbff;
+  border-radius:var(--radius);
+  background:
+    linear-gradient(140deg, rgba(15,23,42,.96), rgba(30,64,110,.95) 54%, rgba(12,95,99,.92));
+  box-shadow:0 18px 52px rgba(15,23,42,.22);
+  overflow:hidden;
+  position:relative;
+}
+.hero-panel::after{
+  content:"";
+  position:absolute;
+  inset:auto 0 -34px auto;
+  width:min(360px,58%);
+  height:170px;
+  background:
+    linear-gradient(90deg, transparent 0 9%, rgba(255,255,255,.16) 9% 10%, transparent 10% 20%),
+    linear-gradient(rgba(255,255,255,.13) 1px, transparent 1px);
+  background-size:46px 46px,46px 46px;
+  transform:rotate(-8deg);
+  opacity:.55;
+}
+.hero-panel>*{position:relative;z-index:1}
+.eyebrow{
+  font-size:.72rem;
+  font-weight:800;
+  color:#a7f3d0;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.hero-panel h1{font-size:clamp(1.55rem,2.6vw,2.3rem);line-height:1.22;letter-spacing:0;margin:0 0 8px}
+.hero-panel p{max-width:50rem;color:rgba(248,251,255,.78);font-size:.94rem}
+.hero-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.hero-actions button{background:rgba(255,255,255,.13);color:#fff;border-color:rgba(255,255,255,.2)}
+.hero-actions button.primary{background:#f8fbff;color:#102033}
+.hero-metrics{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:8px;
+  align-self:end;
+}
+.hero-metric{
+  min-width:0;
+  border:1px solid rgba(255,255,255,.18);
+  background:rgba(255,255,255,.1);
+  border-radius:var(--radius);
+  padding:10px;
+}
+.hero-metric b{display:block;font-size:1.35rem;line-height:1.1}
+.hero-metric span{display:block;color:rgba(248,251,255,.7);font-size:.75rem;margin-top:4px}
+.dash-layout{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 310px;
+  gap:12px;
+  align-items:start;
+  margin-bottom:12px;
+}
+.task-panel,.quick-panel{margin:0}
+.panel-title,.section-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:10px;
+}
+.panel-title b,.section-title b{font-size:.98rem}
+.section-title{margin:18px 2px 10px}
+.section-title .mini{text-align:right}
+.quick-links{display:grid;gap:8px;margin-top:10px}
+.quick-links button{width:100%;text-align:left;background:var(--c-card-solid);border-color:var(--c-line)}
+.subject-grid,.unit-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(255px,1fr));
+  gap:12px;
+}
+.subject-card,.unit-card{margin:0;position:relative;overflow:hidden}
+.subject-card::before,.unit-card::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:4px;
+  background:var(--subject-accent,var(--c-accent));
+}
+.subject-card:hover,.unit-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.subcard-head{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  margin-bottom:10px;
+}
+.subject-mark{
+  width:46px;
+  height:46px;
+  flex:0 0 auto;
+  border-radius:var(--radius);
+  display:grid;
+  place-items:center;
+  color:#fff;
+  font-weight:900;
+  font-size:.82rem;
+  letter-spacing:0;
+  background:
+    linear-gradient(135deg, color-mix(in srgb,var(--subject-accent,var(--c-accent)) 86%,#111827), var(--subject-accent,var(--c-accent))),
+    linear-gradient(90deg, rgba(255,255,255,.18) 1px, transparent 1px);
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.22),0 10px 24px color-mix(in srgb,var(--subject-accent,var(--c-accent)) 18%,transparent);
+}
+.subject-card h2{font-size:1rem;line-height:1.35;margin:0}
+.subject-foot,.unit-foot{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:8px;
+  margin-top:8px;
+}
+.bar{
+  height:7px;
+  background:color-mix(in srgb,var(--subject-soft,var(--c-accent-soft)) 70%,var(--c-line));
+}
+.bar>div{background:var(--subject-accent,var(--c-accent))}
+.tag{
+  border-radius:999px;
+  border:1px solid color-mix(in srgb,var(--c-line) 70%,transparent);
+  background:var(--c-card-solid);
+  font-weight:800;
+}
+.subject-hero{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(320px,.85fr);
+  gap:16px;
+  align-items:start;
+  margin-top:0;
+}
+.subject-heading{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+  margin-bottom:10px;
+}
+.subject-heading h2{font-size:1.4rem;line-height:1.3;margin:0}
+.statgrid{
+  grid-template-columns:repeat(auto-fit,minmax(118px,1fr));
+}
+.statgrid .st{
+  border-radius:var(--radius);
+  background:linear-gradient(180deg, color-mix(in srgb,var(--subject-soft,var(--c-bg)) 58%,var(--c-card-solid)), var(--c-card-solid));
+  border:1px solid var(--c-line);
+}
+.st b{font-size:1.22rem;color:var(--subject-accent,var(--c-accent))}
+.tabs{
+  top:57px;
+  gap:8px;
+  margin:0 -2px 12px;
+  padding:8px 2px;
+  background:color-mix(in srgb,var(--c-bg) 88%,transparent);
+  backdrop-filter:blur(14px);
+}
+.tabs button{border:1px solid var(--c-line);background:var(--c-card-solid)}
+.tabs button.on{background:var(--subject-accent,var(--c-accent));border-color:var(--subject-accent,var(--c-accent))}
+.unit-banner{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-radius:var(--radius);
+  border:1px solid color-mix(in srgb,var(--subject-accent,var(--c-accent)) 22%,var(--c-line));
+  background:linear-gradient(135deg, color-mix(in srgb,var(--subject-soft,var(--c-accent-soft)) 72%,var(--c-card-solid)), var(--c-card-solid));
+  padding:14px 16px;
+  margin:0 0 8px;
+}
+.unit-banner h2{font-size:1.1rem;line-height:1.35;margin:0}
+.fcard,.choice,.stepbox,.popup .inner,.daycard,.metric,.svgpanel,.date-row,.task,.mistake,.diffbox,.hintbox,.empty,.itemrow,.warnbox{
+  border-radius:var(--radius);
+}
+.fcard,.choice,.daycard,.metric,.itemrow{
+  background:var(--c-card-solid);
+}
+.choice:hover,.task:hover,.planitem:hover{
+  border-color:color-mix(in srgb,var(--c-accent) 45%,var(--c-line));
+}
+.stepbox,.mistake{
+  background:linear-gradient(90deg, color-mix(in srgb,var(--c-accent-soft) 45%,transparent), var(--c-card));
+}
+.svgpanel{
+  background:
+    linear-gradient(rgba(23,32,51,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(23,32,51,.04) 1px, transparent 1px),
+    color-mix(in srgb,var(--c-bg) 66%,var(--c-card-solid));
+  background-size:24px 24px;
+}
+.calendar{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+.daycard{margin:0}
+.simgrid{grid-template-columns:minmax(250px,320px) minmax(0,1fr);gap:14px}
+.simcontrols{top:70px}
+.beamtools button.on{background:var(--subject-accent,var(--c-accent))}
+@media (max-width:900px){
+  .hero-panel,.dash-layout,.subject-hero{grid-template-columns:1fr}
+  .hero-metrics{max-width:520px}
+}
+@media (max-width:640px){
+  #app{padding:12px 12px 64px}
+  .topbar.appbar{
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto auto;
+    margin:-12px -12px 12px;
+    padding:10px 12px;
+    gap:8px;
+  }
+  .topbar.appbar .spacer{display:none}
+  .topbar.appbar h1,.topbar.appbar>div{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topbar.appbar button{padding:8px 10px;font-size:.82rem}
+  .hero-panel{padding:18px}
+  .hero-metrics{grid-template-columns:1fr 1fr}
+  .subject-grid,.unit-grid{grid-template-columns:1fr}
+  .subject-foot,.unit-foot{align-items:flex-start;flex-direction:column}
+  .unit-banner{align-items:flex-start;flex-direction:column}
+  .tabs{top:52px}
+}
+
+
+/* --- storage and PWA --- */
+.storage-grid{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(280px,.72fr);
+  gap:12px;
+  align-items:start;
+}
+.storage-kpis{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(135px,1fr));
+  gap:8px;
+  margin:12px 0;
+}
+.storage-kpi{
+  border:1px solid var(--c-line);
+  background:var(--c-card-solid);
+  border-radius:var(--radius);
+  padding:10px;
+}
+.storage-kpi b{display:block;font-size:1.2rem;color:var(--c-accent)}
+.storage-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.storage-pill{
+  display:inline-flex;
+  align-items:center;
+  min-height:26px;
+  border-radius:999px;
+  padding:3px 10px;
+  font-size:.75rem;
+  font-weight:800;
+  border:1px solid var(--c-line);
+  background:var(--c-card-solid);
+}
+.storage-pill.ok{background:color-mix(in srgb,var(--c-ok) 14%,var(--c-card-solid));color:var(--c-ok)}
+.storage-pill.warn{background:color-mix(in srgb,var(--c-warn) 14%,var(--c-card-solid));color:var(--c-warn)}
+.storage-pill.ng{background:color-mix(in srgb,var(--c-ng) 12%,var(--c-card-solid));color:var(--c-ng)}
+.storage-list{display:grid;gap:8px;margin-top:10px}
+.storage-row{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  border-bottom:1px dashed var(--c-line);
+  padding:8px 0;
+}
+.storage-row:last-child{border-bottom:none}
+.file-input{display:none}
+.transfer-panel{
+  display:grid;
+  gap:10px;
+  margin-top:12px;
+}
+.transfer-code{
+  box-sizing:border-box;
+  width:100%;
+  min-height:132px;
+  resize:vertical;
+  border:1px solid var(--c-line);
+  border-radius:var(--radius);
+  padding:10px;
+  color:var(--c-text);
+  background:var(--c-bg);
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.78rem;
+  line-height:1.45;
+  word-break:break-all;
+  white-space:pre-wrap;
+}
+.transfer-code[readonly]{background:color-mix(in srgb,var(--c-card-solid) 86%,var(--c-accent-soft))}
+.transfer-note{
+  display:flex;
+  gap:8px;
+  align-items:flex-start;
+  color:var(--c-muted);
+  font-size:.82rem;
+  line-height:1.55;
+}
+.toast{
+  position:fixed;
+  left:50%;
+  bottom:18px;
+  transform:translateX(-50%);
+  z-index:80;
+  max-width:min(460px,calc(100vw - 28px));
+  border:1px solid var(--c-line);
+  border-radius:var(--radius);
+  padding:10px 14px;
+  color:var(--c-text);
+  background:var(--c-card-solid);
+  box-shadow:var(--shadow-hover);
+  font-weight:800;
+}
+@media (max-width:760px){
+  .storage-grid{grid-template-columns:1fr}
+  .storage-row{align-items:flex-start;flex-direction:column}
+  .storage-actions button{width:100%}
+}
+
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- 科目データ -->
+<script src="subjects/doshitsu1.js"></script>
+<script src="subjects/doshitsu3.js"></script>
+<script src="subjects/kozo1.js"></script>
+<script src="subjects/kozo2.js"></script>
+<script src="subjects/kozo3.js"></script>
+<script src="subjects/suiri1.js"></script>
+<script src="subjects/suiri3.js"></script>
+<script src="subjects/oyosugaku1.js"></script>
+<script src="subjects/keikaku2.js"></script>
+
+<script>
+"use strict";
+const DATA = window.STUDY_DATA || {};
+const ORDER = ["doshitsu1","doshitsu3","kozo1","kozo2","kozo3","suiri1","suiri3","oyosugaku1","keikaku2"];
+const $ = s => document.querySelector(s);
+const app = $("#app");
+
+/* ---------- state ---------- */
+const KEY = "studyapp-v1";
+const DB_NAME = "studyapp-state";
+const DB_VERSION = 1;
+const DB_STORE = "kv";
+const DB_STATE_KEY = "state";
+const APP_VERSION = "2026.07.07-hosted";
+let dbPromise = null;
+let saveTimer = 0;
+let storageStatus = {ready:false, idb:false, persisted:false, mode:"localStorage", lastSaved:"", error:"", sw:"未確認"};
+
+function nowIso(){ return new Date().toISOString(); }
+function parseJSONSafe(raw){ try{ return raw ? JSON.parse(raw) : {}; }catch(e){ return {}; } }
+function readLocalState(){
+  try{ return parseJSONSafe(localStorage.getItem(KEY)); }catch(e){ return {}; }
+}
+let S = readLocalState();
+
+function ensureMeta(){
+  if(!S._meta || typeof S._meta !== "object" || Array.isArray(S._meta)) S._meta = {dates:{}, sheetFilter:"all", sheetFilters:{}, search:""};
+  S._meta.dates = S._meta.dates || {};
+  S._meta.sheetFilters = S._meta.sheetFilters || {};
+  if(typeof S._meta.sheetFilter === "string" && !Object.keys(S._meta.sheetFilters).length) S._meta.sheetFilters._legacy = S._meta.sheetFilter;
+  S._meta.search = S._meta.search || "";
+  S._meta.appVersion = APP_VERSION;
+  return S._meta;
+}
+function meta(){ return ensureMeta(); }
+function stateUpdatedAt(o){ return Date.parse(o?._meta?.updatedAt || "") || 0; }
+function cloneState(){ return JSON.parse(JSON.stringify(S)); }
+function stateBytes(o=S){ try{ return new Blob([JSON.stringify(o)]).size; }catch(e){ return JSON.stringify(o).length; } }
+function save(){
+  const m = meta();
+  m.updatedAt = nowIso();
+  m.saveCount = Number(m.saveCount||0) + 1;
+  storageStatus.lastSaved = m.updatedAt;
+  try{
+    localStorage.setItem(KEY, JSON.stringify(S));
+    storageStatus.mode = storageStatus.idb ? "IndexedDB + localStorage" : "localStorage";
+  }catch(e){
+    storageStatus.error = "localStorage保存失敗: " + (e?.message || e);
+  }
+  queueIdbSave();
+}
+function openDb(){
+  if(typeof indexedDB === "undefined") return Promise.reject(new Error("IndexedDB非対応"));
+  if(dbPromise) return dbPromise;
+  dbPromise = new Promise((resolve,reject)=>{
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if(!db.objectStoreNames.contains(DB_STORE)) db.createObjectStore(DB_STORE,{keyPath:"key"});
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error || new Error("IndexedDBを開けません"));
+  });
+  return dbPromise;
+}
+async function idbGet(key){
+  const db = await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,"readonly");
+    const req=tx.objectStore(DB_STORE).get(key);
+    req.onsuccess=()=>resolve(req.result?.value);
+    req.onerror=()=>reject(req.error);
+  });
+}
+async function idbSet(key,value){
+  const db = await openDb();
+  return new Promise((resolve,reject)=>{
+    const tx=db.transaction(DB_STORE,"readwrite");
+    tx.objectStore(DB_STORE).put({key,value,updatedAt:nowIso()});
+    tx.oncomplete=()=>resolve();
+    tx.onerror=()=>reject(tx.error);
+  });
+}
+function queueIdbSave(){
+  if(typeof indexedDB === "undefined") return;
+  clearTimeout(saveTimer);
+  const snapshot = cloneState();
+  saveTimer = setTimeout(async()=>{
+    try{
+      await idbSet(DB_STATE_KEY, snapshot);
+      storageStatus.idb = true;
+      storageStatus.mode = "IndexedDB + localStorage";
+    }catch(e){
+      storageStatus.error = "IndexedDB保存失敗: " + (e?.message || e);
+    }
+  },120);
+}
+async function hydrateState(){
+  try{
+    const m = meta();
+    storageStatus.lastSaved = m.updatedAt || "";
+    if(typeof navigator !== "undefined" && navigator.storage?.persisted){
+      storageStatus.persisted = await navigator.storage.persisted();
+    }
+    if(typeof indexedDB !== "undefined"){
+      const dbState = await idbGet(DB_STATE_KEY);
+      storageStatus.idb = true;
+      if(dbState && stateUpdatedAt(dbState) > stateUpdatedAt(S)){
+        S = dbState;
+        storageStatus.mode = "IndexedDB";
+      }
+    }
+  }catch(e){
+    storageStatus.error = e?.message || String(e);
+  }finally{
+    storageStatus.ready = true;
+    if(!meta().updatedAt) save(); else queueIdbSave();
+    render();
+  }
+}
+function st(subj){
+  if(!S[subj]) S[subj] = {read:{},fmem:{},fsel:{},fsolve:{},selq:{},quiz:{},prob:{},miss:{formula:0,calc:0},pick:{},mistakes:[],rev:{}};
+  const o=S[subj];
+  o.read=o.read||{}; o.fmem=o.fmem||{}; o.fsel=o.fsel||{}; o.fsolve=o.fsolve||{};
+  o.selq=o.selq||{}; o.quiz=o.quiz||{}; o.prob=o.prob||{};
+  o.miss=o.miss||{formula:0,calc:0}; o.pick=o.pick||{}; o.rev=o.rev||{};
+  if(!Array.isArray(o.mistakes)) o.mistakes=[];
+  return o;
+}
+
+/* ---------- helpers ---------- */
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function tex(latex, disp){
+  if(window.katex){ try{ return katex.renderToString(latex,{displayMode:!!disp,throwOnError:false}); }catch(e){} }
+  return "<code>"+esc(latex)+"</code>";
+}
+function md(html, subj){
+  let s = String(html);
+  s = s.replace(/\$\$([\s\S]+?)\$\$/g, (_,m)=>tex(m,true));
+  s = s.replace(/\$([^$\n]+?)\$/g, (_,m)=>tex(m,false));
+  s = s.replace(/\[\[([^\]]+?)\]\]/g, (_,t)=>`<span class="gl" data-subj="${subj}" data-term="${esc(t)}">${esc(t)}</span>`);
+  return s;
+}
+function pct(n,d){ return d? Math.round(100*n/d) : 0; }
+function plain(s){ return String(s||"").replace(/<[^>]+>/g," ").replace(/\[\[|\]\]/g,"").replace(/\s+/g," ").trim(); }
+function ymd(d){ const z=n=>String(n).padStart(2,"0"); return `${d.getFullYear()}-${z(d.getMonth()+1)}-${z(d.getDate())}`; }
+function todayStr(){ return ymd(new Date()); }
+function parseDate(v){ if(!v) return null; const [y,m,d]=v.split("-").map(Number); if(!y||!m||!d) return null; return new Date(y,m-1,d); }
+function addDaysStr(base,n){ const d=parseDate(base); d.setDate(d.getDate()+n); return ymd(d); }
+function daysBetween(a,b){ const da=parseDate(a), db=parseDate(b); if(!da||!db) return null; return Math.round((db-da)/86400000); }
+function daysUntil(v){ return daysBetween(todayStr(), v); }
+function dateLabel(v){ const d=parseDate(v); if(!d) return "未設定"; return `${d.getMonth()+1}/${d.getDate()}(${["日","月","火","水","木","金","土"][d.getDay()]})`; }
+function testBadge(sid){
+  const v=meta().dates[sid]; if(!v) return "試験日未設定";
+  const left=daysUntil(v);
+  if(left<0) return `終了 ${dateLabel(v)}`;
+  if(left===0) return `今日 ${dateLabel(v)}`;
+  return `あと${left}日 ${dateLabel(v)}`;
+}
+function setTestDate(sid,value){
+  if(value) meta().dates[sid]=value; else delete meta().dates[sid];
+  save(); render();
+}
+function dateControl(sid){
+  const v=meta().dates[sid]||"";
+  return `<div class="examline" onclick="event.stopPropagation()">
+    <label class="mini">試験日 <input type="date" value="${esc(v)}" onchange="setTestDate('${sid}',this.value)"></label>
+    <span class="tag">${esc(testBadge(sid))}</span>
+  </div>`;
+}
+
+const SUBJECT_TONES = {
+  doshitsu1:{abbr:"DS1", field:"土質力学", accent:"#b45309", soft:"#fff3d2"},
+  doshitsu3:{abbr:"DS3", field:"地盤と支持力", accent:"#9a3412", soft:"#ffedd5"},
+  kozo1:{abbr:"K1", field:"構造力学", accent:"#2563eb", soft:"#dbeafe"},
+  kozo2:{abbr:"K2", field:"応力と変形", accent:"#0f766e", soft:"#ccfbf1"},
+  kozo3:{abbr:"K3", field:"エネルギー法", accent:"#0891b2", soft:"#cffafe"},
+  suiri1:{abbr:"H1", field:"水理学", accent:"#0284c7", soft:"#e0f2fe"},
+  suiri3:{abbr:"H3", field:"水理応用", accent:"#0369a1", soft:"#dbeafe"},
+  oyosugaku1:{abbr:"M1", field:"応用数学", accent:"#475569", soft:"#e2e8f0"},
+  keikaku2:{abbr:"P2", field:"計画学", accent:"#16a34a", soft:"#dcfce7"}
+};
+function subjectTone(id){ return SUBJECT_TONES[id] || {abbr:"ST", field:"Study", accent:"var(--c-accent)", soft:"var(--c-accent-soft)"}; }
+function subjectStyle(id){ const t=subjectTone(id); return `--subject-accent:${t.accent};--subject-soft:${t.soft}`; }
+function subjectMark(id){ const t=subjectTone(id); return `<div class="subject-mark" aria-hidden="true"><span>${esc(t.abbr)}</span></div>`; }
+
+
+/* ---------- forgetting curve review ---------- */
+const REVIEW_INTERVALS = [1,3,7,14,30,60];
+const REVIEW_LABELS = ["翌日","3日後","1週間後","2週間後","1か月後","2か月後"];
+function reviewKey(type,uid,id){ return `${type}:${uid}:${id}`; }
+function reviewItem(sid,key,kind,title,href,ok=true){
+  const s=st(sid), prev=s.rev[key]||{};
+  const prevLevel = Number.isFinite(prev.level) ? prev.level : -1;
+  const level = ok ? Math.min(prevLevel+1, REVIEW_INTERVALS.length-1) : -1;
+  const due = addDaysStr(todayStr(), ok ? REVIEW_INTERVALS[level] : 0);
+  s.rev[key]={kind:kind||prev.kind||"復習", title:title||prev.title||key, href:href||prev.href||`s/${sid}`, level, last:todayStr(), due, miss:ok?(prev.miss||0):(prev.miss||0)+1};
+}
+function reviewDueItems(sid){
+  const s=st(sid), today=todayStr(), rows=[];
+  Object.entries(s.rev||{}).forEach(([key,r])=>{
+    const left=daysBetween(today,r.due);
+    if(left!=null && left<=0){
+      rows.push({kind:"忘却曲線復習", title:r.title||key, sub:`${r.kind||"復習"} / ${left<0?`${-left}日遅れ`:"今日"} / 次は${REVIEW_LABELS[r.level]||"復習"}`, href:r.href||`s/${sid}`, score:240+Math.min(80,Math.abs(left)*12)+(r.miss||0)*8, sid, reviewKey:key});
+    }
+  });
+  return rows.sort((a,b)=>b.score-a.score);
+}
+function reviewDueCount(sid){ return reviewDueItems(sid).length; }
+function reviewAllCount(sid){ return Object.keys(st(sid).rev||{}).length; }
+
+/* ---------- progress and task computation ---------- */
+function unitProg(subj, u){
+  const s = st(subj); const parts=[];
+  if(u.sections?.length) parts.push(pct(u.sections.filter((_,i)=>s.read[u.id+":"+i]).length, u.sections.length));
+  if(u.formulas?.length) parts.push(pct(u.formulas.filter(f=>s.fmem[u.id+":"+f.id]).length, u.formulas.length));
+  if(u.selectQuiz?.length) parts.push(pct(u.selectQuiz.filter((_,i)=>s.selq[u.id+":"+i]===1).length, u.selectQuiz.length));
+  if(u.problems?.length) parts.push(pct(u.problems.filter(p=>s.prob[u.id+":"+p.id]==="ok").length, u.problems.length));
+  if(u.quiz?.length) parts.push(pct(u.quiz.filter((_,i)=>s.quiz[u.id+":"+i]===1).length, u.quiz.length));
+  return parts.length? Math.round(parts.reduce((a,b)=>a+b,0)/parts.length) : 0;
+}
+function subjProg(subj){
+  const d = DATA[subj]; if(!d||!d.units.length) return 0;
+  return Math.round(d.units.reduce((a,u)=>a+unitProg(subj,u),0)/d.units.length);
+}
+function fstage(subj,u,f){
+  const s=st(subj), k=u.id+":"+f.id;
+  if(s.fsolve[k]) return 3; if(s.fsel[k]) return 2; if(s.fmem[k]) return 1; return 0;
+}
+const STAGE_LABEL=["未着手","覚えた","選べる","解ける"];
+function formulaById(u,id){ return (u.formulas||[]).find(f=>f.id===id); }
+function buildTasks(sid, limit){
+  const d=DATA[sid]; if(!d) return [];
+  const s=st(sid); const tasks=[];
+  const due=daysUntil(meta().dates[sid]);
+  if(due!=null && due<0) return [];
+  const dueBoost=due==null?0:Math.max(0,80-due*3);
+  if(s.mistakes.length){
+    tasks.push({kind:"間違い復習", title:`間違いノート ${s.mistakes.length}件`, sub:"式ミス・計算ミス・選択ミスを先に潰す", href:`s/${sid}/mistakes`, score:260+dueBoost, sid});
+  }
+  reviewDueItems(sid).forEach(t=>tasks.push(Object.assign({},t,{score:t.score+dueBoost})));
+  d.units.forEach(u=>{
+    const up=unitProg(sid,u), base=(u.priority||1)*100+(100-up)+dueBoost;
+    (u.sections||[]).forEach((sec,i)=>{
+      if(!s.read[u.id+":"+i]) tasks.push({kind:"解説", title:sec.heading, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/learn`, score:base+18, sid});
+    });
+    (u.formulas||[]).forEach(f=>{
+      const fs=fstage(sid,u,f);
+      if(fs<1) tasks.push({kind:"公式暗記", title:f.name, sub:`まだ未着手 / ${u.title}`, href:`s/${sid}/u/${u.id}/formula`, score:base+42, sid});
+      else if(fs<2) tasks.push({kind:"公式選択", title:f.name, sub:"覚えた公式を問題文から選べるようにする", href:`s/${sid}/u/${u.id}/select`, score:base+50, sid});
+      else if(fs<3) tasks.push({kind:"計算演習", title:f.name, sub:"公式を使って解ける段階まで上げる", href:`s/${sid}/u/${u.id}/solve`, score:base+58, sid});
+    });
+    (u.selectQuiz||[]).forEach((q,i)=>{
+      if(s.selq[u.id+":"+i]!==1) tasks.push({kind:"公式選択", title:q.q, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/select`, score:base+34, sid});
+    });
+    (u.problems||[]).forEach(p=>{
+      if(s.prob[u.id+":"+p.id]!=="ok") tasks.push({kind:"計算演習", title:p.pattern, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/solve`, score:base+45, sid});
+    });
+    (u.quiz||[]).forEach((q,i)=>{
+      if(s.quiz[u.id+":"+i]!==1) tasks.push({kind:"理解クイズ", title:q.q, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/quiz`, score:base+22, sid});
+    });
+  });
+  const seen=new Set();
+  const sorted=tasks.sort((a,b)=>b.score-a.score).filter(t=>{
+    const k=t.kind+"|"+t.href+"|"+t.title;
+    if(seen.has(k)) return false; seen.add(k); return true;
+  });
+  return limit? sorted.slice(0,limit):sorted;
+}
+function globalTasks(limit){
+  return ORDER.filter(id=>DATA[id]).flatMap(id=>buildTasks(id,3)).sort((a,b)=>b.score-a.score).slice(0,limit);
+}
+function taskListHTML(tasks, emptyText){
+  if(!tasks.length) return `<div class="empty">${esc(emptyText||"今やる項目はありません")}</div>`;
+  return `<div class="todo-list">${tasks.map(t=>`<div class="task">
+    <div class="task-main"><span class="tag">${esc(t.kind)}</span><span class="task-title">${esc(t.title)}</span><div class="task-sub">${esc(t.sub||"")}</div></div>
+    <button class="primary" onclick="nav('${t.href}')">開く</button>
+  </div>`).join("")}</div>`;
+}
+
+
+function fmtBytes(n){
+  if(n<1024) return `${n} B`;
+  if(n<1024*1024) return `${(n/1024).toFixed(1)} KB`;
+  return `${(n/1024/1024).toFixed(2)} MB`;
+}
+function savedLabel(v){
+  if(!v) return "未保存";
+  const d = new Date(v);
+  if(Number.isNaN(d.getTime())) return "未保存";
+  return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+}
+function stateStats(){
+  let mistakes=0, reviews=0, solved=0;
+  ORDER.filter(id=>DATA[id]).forEach(id=>{
+    const s=st(id);
+    mistakes += (s.mistakes||[]).length;
+    reviews += Object.keys(s.rev||{}).length;
+    Object.values(s.prob||{}).forEach(v=>{ if(v==="ok") solved++; });
+  });
+  return {bytes:stateBytes(), mistakes, reviews, solved, saveCount:Number(meta().saveCount||0), updatedAt:meta().updatedAt||""};
+}
+function buildBackup(){
+  return {app:"studyapp-2026", version:APP_VERSION, exportedAt:nowIso(), state:cloneState()};
+}
+function backupFilename(){
+  const d=new Date(), z=n=>String(n).padStart(2,"0");
+  return `studyapp-backup-${d.getFullYear()}${z(d.getMonth()+1)}${z(d.getDate())}-${z(d.getHours())}${z(d.getMinutes())}.json`;
+}
+function downloadBackup(){
+  save();
+  const blob = new Blob([JSON.stringify(buildBackup(),null,2)], {type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=backupFilename();
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 800);
+  toast("バックアップを書き出しました");
+}
+async function copyBackup(){
+  try{
+    if(!navigator.clipboard) throw new Error("clipboard unavailable");
+    save();
+    await navigator.clipboard.writeText(JSON.stringify(buildBackup(),null,2));
+    toast("バックアップをコピーしました");
+  }catch(e){
+    toast("コピーできないため、書き出しを使ってください");
+  }
+}
+function bytesToBase64Url(bytes){
+  let bin = "";
+  const chunk = 0x8000;
+  for(let i=0;i<bytes.length;i+=chunk){
+    bin += String.fromCharCode(...bytes.slice(i,i+chunk));
+  }
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function base64UrlToBytes(code){
+  const clean = String(code||"").trim().replace(/\s+/g,"").replace(/-/g,"+").replace(/_/g,"/");
+  if(!clean) throw new Error("コードが空です");
+  const padded = clean + "=".repeat((4 - clean.length % 4) % 4);
+  const bin = atob(padded);
+  return Uint8Array.from(bin, c => c.charCodeAt(0));
+}
+function makeTransferCode(){
+  save();
+  const payload = JSON.stringify(buildBackup());
+  return bytesToBase64Url(new TextEncoder().encode(payload));
+}
+function parseTransferCode(code){
+  const raw = String(code||"").trim();
+  if(!raw) throw new Error("コードが空です");
+  if(raw.startsWith("{")) return parseBackupState(raw);
+  const json = new TextDecoder().decode(base64UrlToBytes(raw));
+  return parseBackupState(json);
+}
+function showTransferCode(){
+  const el = document.getElementById("transfer-code");
+  if(!el) return;
+  el.value = makeTransferCode();
+  el.focus();
+  if(el.select) el.select();
+  toast("引き継ぎコードを作成しました");
+}
+async function copyTransferCode(){
+  const code = makeTransferCode();
+  const el = document.getElementById("transfer-code");
+  if(el) el.value = code;
+  try{
+    if(!navigator.clipboard) throw new Error("clipboard unavailable");
+    await navigator.clipboard.writeText(code);
+    toast("引き継ぎコードをコピーしました");
+  }catch(e){
+    if(el){ el.focus(); if(el.select) el.select(); }
+    toast("コードを表示しました");
+  }
+}
+function restoreTransferCode(){
+  const el = document.getElementById("restore-code");
+  const raw = el ? el.value : "";
+  try{
+    const next = parseTransferCode(raw);
+    const ok = confirm("現在の学習履歴を、貼り付けた引き継ぎコードの内容で置き換えます。実行しますか？");
+    if(!ok) return;
+    S = next;
+    meta().importedAt = nowIso();
+    save();
+    render();
+    toast("スマホ用データを引き継ぎました");
+  }catch(e){
+    alert("引き継ぎコードを読み込めませんでした: " + (e?.message || e));
+  }
+}
+async function shareBackup(){
+  try{
+    save();
+    const payload = JSON.stringify(buildBackup(), null, 2);
+    if(typeof File !== "undefined" && navigator.share && navigator.canShare){
+      const file = new File([payload], backupFilename(), {type:"application/json"});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({title:"Study App Backup", text:"学習履歴バックアップ", files:[file]});
+        toast("共有を開きました");
+        return;
+      }
+    }
+    if(navigator.share){
+      await navigator.share({title:"Study App 引き継ぎコード", text:makeTransferCode()});
+      toast("共有を開きました");
+      return;
+    }
+    await copyTransferCode();
+  }catch(e){
+    if(e?.name === "AbortError") return;
+    storageStatus.error = e?.message || String(e);
+    downloadBackup();
+  }
+}
+function parseBackupState(raw){
+  const obj = JSON.parse(String(raw));
+  const state = obj?.state || obj;
+  if(!state || typeof state !== "object" || Array.isArray(state)) throw new Error("学習データが見つかりません");
+  return state;
+}
+function restoreBackup(file){
+  if(!file) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const next=parseBackupState(r.result);
+      const ok=confirm("現在の学習履歴を、選択したバックアップで置き換えます。実行しますか？");
+      if(!ok) return;
+      S=next;
+      meta().importedAt=nowIso();
+      save();
+      render();
+      toast("バックアップを復元しました");
+    }catch(e){
+      alert("バックアップを読み込めませんでした: " + (e?.message || e));
+    }
+  };
+  r.readAsText(file);
+}
+async function requestPersistentStorage(){
+  try{
+    if(!(typeof navigator !== "undefined" && navigator.storage?.persist)) throw new Error("このブラウザでは利用できません");
+    storageStatus.persisted = await navigator.storage.persist();
+    save();
+    render();
+    toast(storageStatus.persisted ? "保存領域を保護しました" : "通常保存のままです");
+  }catch(e){
+    storageStatus.error = e?.message || String(e);
+    render();
+  }
+}
+function storageView(){
+  const stats=stateStats();
+  const canPwa = typeof navigator !== "undefined" && "serviceWorker" in navigator && location.protocol !== "file:";
+  const fileMode = location.protocol === "file:";
+  const persistClass = storageStatus.persisted ? "ok" : "warn";
+  const idbClass = storageStatus.idb ? "ok" : "warn";
+  app.innerHTML = `<div class="topbar appbar"><button class="ghost" onclick="nav('home')">←</button><h1>保存・引き継ぎ</h1><span class="spacer"></span>
+      <button onclick="downloadBackup()">書き出し</button></div>
+    <div class="storage-grid">
+      <section class="card">
+        <div class="panel-title"><b>保存状態</b><span class="storage-pill ${idbClass}">${esc(storageStatus.mode)}</span></div>
+        <div class="storage-kpis">
+          <div class="storage-kpi"><b>${esc(savedLabel(stats.updatedAt))}</b><span class="mini">最終保存</span></div>
+          <div class="storage-kpi"><b>${esc(fmtBytes(stats.bytes))}</b><span class="mini">データ量</span></div>
+          <div class="storage-kpi"><b>${stats.reviews}</b><span class="mini">復習登録</span></div>
+          <div class="storage-kpi"><b>${stats.mistakes}</b><span class="mini">間違いノート</span></div>
+        </div>
+        <div class="storage-list">
+          <div class="storage-row"><div><b>ブラウザ内保存</b><div class="mini">localStorage と IndexedDB に二重保存</div></div><span class="storage-pill ${idbClass}">${storageStatus.idb?"有効":"待機中"}</span></div>
+          <div class="storage-row"><div><b>保存領域の保護</b><div class="mini">ブラウザが自動削除しにくい領域を要求</div></div><span class="storage-pill ${persistClass}">${storageStatus.persisted?"保護済み":"通常"}</span></div>
+          <div class="storage-row"><div><b>PWA</b><div class="mini">${fileMode?"file:// では登録不可":location.origin}</div></div><span class="storage-pill ${canPwa?"ok":"warn"}">${canPwa?"対応":"配信が必要"}</span></div>
+        </div>
+        ${storageStatus.error?`<div class="warnbox">${esc(storageStatus.error)}</div>`:""}
+        <div class="storage-actions">
+          <button class="primary" onclick="save();toast('保存しました')">今すぐ保存</button>
+          <button onclick="requestPersistentStorage()">消えにくくする</button>
+          <button onclick="downloadBackup()">JSONを書き出す</button>
+          <button onclick="copyBackup()">JSONをコピー</button>
+        </div>
+      </section>
+      <section class="card">
+        <div class="panel-title"><b>スマホ引き継ぎ</b><span class="mini">code / share</span></div>
+        <p class="mini">Mac側でコードを作り、スマホ側の同じ画面に貼り付けると学習履歴を引き継げます。</p>
+        <div class="storage-actions">
+          <button class="primary" onclick="showTransferCode()">コードを表示</button>
+          <button onclick="copyTransferCode()">コードをコピー</button>
+          <button onclick="shareBackup()">共有</button>
+        </div>
+        <div class="transfer-panel">
+          <textarea id="transfer-code" class="transfer-code" readonly placeholder="ここに引き継ぎコードが表示されます"></textarea>
+          <div class="transfer-note">スマホでこのアプリを開き、下の欄にコードを貼り付けると同じデータから再開できます。</div>
+          <textarea id="restore-code" class="transfer-code" placeholder="受け取った引き継ぎコード、またはバックアップJSONをここに貼り付け"></textarea>
+          <input id="restore-file" class="file-input" type="file" accept="application/json,.json" onchange="restoreBackup(this.files[0]);this.value=''">
+          <div class="storage-actions">
+            <button class="primary" onclick="restoreTransferCode()">コードから復元</button>
+            <button onclick="document.getElementById('restore-file').click()">JSONから復元</button>
+          </div>
+        </div>
+        <div class="diffbox">Macなしで使うには、Netlify / Vercel / Cloudflare Pages / GitHub Pages などのHTTPS URLに置いてからスマホで開きます。HTTPやfile://ではホーム画面追加・オフラインキャッシュが制限されます。</div>
+      </section>
+    </div>`;
+}
+function toast(msg){
+  document.querySelectorAll(".toast").forEach(x=>x.remove());
+  const t=document.createElement("div");
+  t.className="toast";
+  t.textContent=msg;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(),2200);
+}
+function registerPWA(){
+  if(typeof window === "undefined" || typeof navigator === "undefined" || !("serviceWorker" in navigator)){
+    storageStatus.sw = "非対応";
+    return;
+  }
+  if(location.protocol === "file:"){
+    storageStatus.sw = "fileでは無効";
+    return;
+  }
+  window.addEventListener("load",()=>{
+    navigator.serviceWorker.register("./sw.js").then(()=>{
+      storageStatus.sw = "登録済み";
+    }).catch(e=>{
+      storageStatus.sw = "登録失敗";
+      storageStatus.error = e?.message || String(e);
+    });
+  });
+}
+
+/* ---------- routing ---------- */
+window.addEventListener("hashchange", render);
+function nav(h){ location.hash = h; }
+function render(){
+  const h = location.hash.slice(1);
+  window.scrollTo(0,0);
+  if(!h || h==="home") return home();
+  if(h==="calendar") return calendarView();
+  if(h==="search") return searchView();
+  if(h==="storage") return storageView();
+  const m = h.split("/");
+  if(m[0]==="s" && DATA[m[1]]){
+    if(m[2]==="sheet") return sheet(m[1]);
+    if(m[2]==="mistakes") return mistakesView(m[1]);
+    if(m[2]==="beam") return beamLab(m[1]);
+    if(m[2]==="u" && m[3]) return unit(m[1], m[3], m[4]||"learn");
+    return subject(m[1]);
+  }
+  home();
+}
+
+/* ---------- views ---------- */
+function home(){
+  const subjects = ORDER.filter(id=>DATA[id]);
+  const avg = subjects.length ? Math.round(subjects.reduce((a,id)=>a+subjProg(id),0)/subjects.length) : 0;
+  const due = subjects.reduce((a,id)=>a+reviewDueCount(id),0);
+  const urgent = subjects.filter(id=>{
+    const left = daysUntil(meta().dates[id]);
+    return left!=null && left>=0 && left<=7;
+  }).length;
+  const cards = subjects.map(id=>{
+    const d=DATA[id], p=subjProg(id), t=subjectTone(id);
+    return `<div class="card subcard subject-card" style="${subjectStyle(id)}" onclick="nav('s/${id}')">
+      <div class="subcard-head">
+        ${subjectMark(id)}
+        <div>
+          <div class="meta">${esc(t.field)}</div>
+          <h2>${esc(d.name)}</h2>
+        </div>
+      </div>
+      <div class="meta">${esc(d.teacher)} ｜ ${esc(d.year)} ｜ ${esc(d.examInfo)}</div>
+      ${dateControl(id)}
+      <div class="bar"><div style="width:${p}%"></div></div>
+      <div class="subject-foot"><span class="mini">習熟度 ${p}%</span><span class="tag">${esc(testBadge(id))}</span></div>
+    </div>`;
+  }).join("");
+  const missing = ORDER.filter(id=>!DATA[id]);
+  app.innerHTML = `<div class="topbar appbar"><h1>テスト勉強 2026前期</h1><span class="spacer"></span>
+      <button onclick="nav('calendar')">学習カレンダー</button><button onclick="nav('search')">検索</button><button onclick="nav('storage')">保存</button></div>
+    <section class="hero-panel">
+      <div>
+        <div class="eyebrow">study control board</div>
+        <h1>試験日から逆算して、今日やることに集中する。</h1>
+        <p>科目ごとの進捗、弱点、忘却曲線の復習予定をひとつの画面で見ながら、演習にすぐ戻れるようにしました。</p>
+        <div class="hero-actions"><button class="primary" onclick="nav('calendar')">カレンダーを見る</button><button onclick="nav('search')">横断検索</button></div>
+      </div>
+      <div class="hero-metrics" aria-label="学習状況">
+        <div class="hero-metric"><b>${avg}%</b><span>平均習熟度</span></div>
+        <div class="hero-metric"><b>${due}</b><span>今日の復習</span></div>
+        <div class="hero-metric"><b>${urgent}</b><span>7日以内の試験</span></div>
+      </div>
+    </section>
+    <div class="dash-layout">
+      <div class="card task-panel"><div class="panel-title"><b>今日やること</b><span class="mini">弱点と試験日から自動で並べ替え</span></div>
+        ${taskListHTML(globalTasks(6),"試験日を設定すると、今日の優先順がもっと正確になります")}</div>
+      <div class="card quick-panel">
+        <div class="panel-title"><b>ショートカット</b><span class="mini">すぐ開く</span></div>
+        <div class="quick-links">
+          <button onclick="nav('calendar')">学習カレンダー</button>
+          <button onclick="nav('search')">公式・用語検索</button>
+          <button onclick="nav('s/kozo1/beam')">構造図シミュレータ</button>
+          <button onclick="nav('storage')">保存・バックアップ</button>
+        </div>
+      </div>
+    </div>
+    <div class="section-title"><b>科目</b><span class="mini">進捗と試験日を見ながら選択</span></div>
+    <div class="subject-grid">${cards}</div>${missing.length?`<p class="notice">未生成: ${missing.join(", ")}</p>`:""}`;
+}
+function subject(id){
+  const d = DATA[id]; const s = st(id); const t = subjectTone(id);
+  const units = d.units.map(u=>{
+    const p = unitProg(id,u);
+    const pr = u.priority===3?`<span class="tag p3">最頻出</span>`:u.priority===2?`<span class="tag p2">頻出</span>`:"";
+    return `<div class="card subcard unit-card" style="${subjectStyle(id)}" onclick="nav('s/${id}/u/${u.id}')">
+      <div class="subcard-head">
+        ${subjectMark(id)}
+        <div>
+          <div class="meta">${esc(u.weeks||"")}</div>
+          <h2>${esc(u.title)}</h2>
+        </div>
+      </div>
+      <div class="bar"><div style="width:${p}%"></div></div>
+      <div class="unit-foot"><span class="mini">${p}% ${p<40&&u.priority===3?'<span class="weak">← 弱点×最頻出</span>':""}</span>${pr}</div>
+    </div>`;
+  }).join("");
+  const nf = d.units.reduce((a,u)=>a+(u.formulas?.length||0),0);
+  const stages=[0,0,0,0];
+  d.units.forEach(u=>(u.formulas||[]).forEach(f=>stages[fstage(id,u,f)]++));
+  app.innerHTML = `<div class="topbar appbar"><button class="ghost" onclick="nav('home')">←</button><h1>${esc(d.name)}</h1><span class="spacer"></span>
+      <button onclick="nav('calendar')">学習カレンダー</button><button onclick="nav('search')">検索</button><button onclick="nav('storage')">保存</button></div>
+    <section class="card subject-hero" style="${subjectStyle(id)}">
+      <div>
+        <div class="subject-heading">${subjectMark(id)}<div><div class="eyebrow">${esc(t.field)}</div><h2>${esc(d.name)}</h2><div class="mini">${esc(d.examInfo)}</div></div></div>
+        ${dateControl(id)}
+        <p style="font-size:.9rem;margin-top:8px">目安: ${esc(d.examTips||"")}</p>
+        <div class="rowbtns"><button class="primary" onclick="nav('s/${id}/sheet')">直前モード</button><button onclick="nav('s/${id}/mistakes')">間違いノート</button>${id.startsWith("kozo")?`<button onclick="nav('s/${id}/beam')">構造図シミュレータ</button>`:""}</div>
+      </div>
+      <div class="statgrid">
+        <div class="st"><b>${subjProg(id)}%</b><div class="mini">習熟度</div></div>
+        <div class="st"><b>${stages[3]}/${nf}</b><div class="mini">解ける公式</div></div>
+        <div class="st"><b>${s.miss.formula}</b><div class="mini">式ミス累計</div></div>
+        <div class="st"><b>${s.miss.calc}</b><div class="mini">計算ミス累計</div></div>
+        <div class="st"><b>${reviewDueCount(id)}/${reviewAllCount(id)}</b><div class="mini">今日/登録済み復習</div></div>
+      </div>
+    </section>
+    <div class="card task-panel" style="${subjectStyle(id)}"><div class="panel-title"><b>この科目の今日やること</b><span class="mini">${esc(testBadge(id))}</span></div>
+      ${taskListHTML(buildTasks(id,5),"この科目はかなり仕上がっています")}</div>
+    <div class="section-title"><b>単元</b><span class="mini">頻出度と進捗で確認</span></div>
+    <div class="unit-grid">${units}</div>`;
+}
+const TABS=[["learn","解説"],["formula","公式"],["select","公式選択"],["solve","計算演習"],["quiz","クイズ"]];
+function unit(sid, uid, tab){
+  const d=DATA[sid]; const u=d.units.find(x=>x.id===uid); if(!u) return subject(sid);
+  const tabs = TABS.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="nav('s/${sid}/u/${uid}/${k}')">${l}</button>`).join("");
+  let body="";
+  if(tab==="learn") body=vLearn(sid,u);
+  if(tab==="formula") body=vFormula(sid,u);
+  if(tab==="select") body=vSelect(sid,u);
+  if(tab==="solve") body=vSolve(sid,u);
+  if(tab==="quiz") body=vQuiz(sid,u);
+  app.innerHTML = `<div class="topbar appbar"><button class="ghost" onclick="nav('s/${sid}')">←</button>
+    <div><b>${esc(u.title)}</b><div class="crumb">${esc(d.name)} ${esc(u.weeks||"")}</div></div></div>
+    <section class="unit-banner" style="${subjectStyle(sid)}">
+      <div>${subjectMark(sid)}</div>
+      <div class="spacer"><h2>${esc(u.title)}</h2><div class="mini">${esc(d.name)} ｜ ${esc(u.weeks||"")}</div></div>
+      <span class="tag">${unitProg(sid,u)}%</span>
+    </section>
+    <div class="tabs" style="${subjectStyle(sid)}">${tabs}</div>${body}`;
+  bindGlossary(sid);
+}
+
+/* --- 解説 --- */
+function vLearn(sid,u){
+  const s=st(sid);
+  return (u.sections||[]).map((sec,i)=>{
+    const read = s.read[u.id+":"+i];
+    return `<div class="card">
+      <h3>${esc(sec.heading)}</h3>
+      ${sec.svg?`<div class="svgwrap">${sec.svg}</div>`:""}
+      <div class="section-body">${md(sec.body,sid)}</div>
+      <div class="rowbtns"><button class="${read?'':'primary'}" onclick="markRead('${sid}','${u.id}',${i})">${read?"復習した":"読んだ"}</button></div>
+    </div>`;
+  }).join("") || `<p class="notice">解説なし</p>`;
+}
+function markRead(sid,uid,i){
+  const s=st(sid), d=DATA[sid], u=d?.units?.find(x=>x.id===uid), sec=u?.sections?.[i];
+  const k=uid+":"+i;
+  s.read[k]=1;
+  reviewItem(sid,reviewKey("read",uid,i),"解説復習",sec?.heading||"解説",`s/${sid}/u/${uid}/learn`,true);
+  save(); render();
+}
+
+/* --- 公式カード --- */
+let fmode="show";
+function vFormula(sid,u){
+  const modes=[["show","表示"],["blank","穴埋め"],["recall","白紙再現"]];
+  const mbtns = modes.map(([k,l])=>`<button class="${fmode===k?'primary':''}" onclick="fmode='${k}';render()">${l}</button>`).join("");
+  const cards=(u.formulas||[]).map(f=>fcardHTML(sid,u,f,fmode)).join("");
+  return `<div class="rowbtns" style="margin:10px 0">${mbtns}</div>${cards || '<p class="notice">公式なし</p>'}`;
+}
+function fcardHTML(sid,u,f,mode){
+  const stg=fstage(sid,u,f);
+  const head=`<div class="fname"><span>${esc(f.name)}</span><span class="stage s${stg}">${STAGE_LABEL[stg]}</span></div>`;
+  const varsT = (f.vars||[]).map(v=>`<tr><td>${tex(v.sym)}</td><td>${esc(v.meaning)}</td><td class="mini">${esc(v.unit||"")}</td></tr>`).join("");
+  const detail=`<table class="vars">${varsT}</table>
+    <div class="whenbox"><b>使いどころ:</b> ${md(f.when||"",sid)}</div>
+    <div class="mini" style="margin:4px 0">${md(f.intuition||"",sid)}</div>
+    ${f.derivation?`<div class="mini">${md(f.derivation,sid)}</div>`:""}`;
+  const k=u.id+":"+f.id;
+  if(mode==="show") return `<div class="fcard">${head}<div class="flatex">${tex(f.latex,true)}</div>${detail}</div>`;
+  if(mode==="blank"){
+    return `<div class="fcard">${head}<div class="flatex">${tex(f.blank||f.latex,true)}</div>
+      <div id="ba-${k}" style="display:none"><div class="flatex">${tex(f.latex,true)}</div>
+        <div class="rowbtns"><button class="primary" onclick="gradeF('${sid}','${k}',1)">正解できた</button><button onclick="gradeF('${sid}','${k}',0)">まだ</button></div></div>
+      <div class="rowbtns"><button onclick="document.getElementById('ba-${k}').style.display='block';this.style.display='none'">答えを見る</button></div></div>`;
+  }
+  return `<div class="fcard">${head}<div class="whenbox">${md(f.when||"",sid)}</div>
+    <p class="mini">これだけ見て、紙に公式を書けるか?</p>
+    <div id="ra-${k}" style="display:none"><div class="flatex">${tex(f.latex,true)}</div>${detail}
+      <div class="rowbtns"><button class="primary" onclick="gradeF('${sid}','${k}',1)">書けた</button><button onclick="gradeF('${sid}','${k}',0)">まだ</button></div></div>
+    <div class="rowbtns"><button onclick="document.getElementById('ra-${k}').style.display='block';this.style.display='none'">答え合わせ</button></div></div>`;
+}
+function gradeF(sid,k,ok){
+  const s=st(sid), [uid,fid]=k.split(":");
+  const u=DATA[sid]?.units?.find(x=>x.id===uid), f=formulaById(u||{},fid);
+  if(ok) s.fmem[k]=1; else delete s.fmem[k];
+  reviewItem(sid,reviewKey("formula",uid,fid),"公式復習",f?.name||"公式",`s/${sid}/u/${uid}/formula`,!!ok);
+  save(); render();
+}
+
+/* --- 公式選択・クイズ --- */
+function vSelect(sid,u){ return (u.selectQuiz||[]).map((q,i)=>qHTML(sid,u,q,i,"selq","fsel",q.formulaRef)).join("") || '<p class="notice">問題なし</p>'; }
+function vQuiz(sid,u){ return (u.quiz||[]).map((q,i)=>qHTML(sid,u,q,i,"quiz",null,null)).join("") || '<p class="notice">問題なし</p>'; }
+function findChoiceFormula(u,choice){
+  const t=plain(choice).replace(/\s/g,"");
+  return (u.formulas||[]).find(f=>{
+    const name=plain(f.name).replace(/\s/g,"");
+    const head=plain(f.latex||"").split("=")[0].replace(/[\\{}\s]/g,"");
+    return (name && t.includes(name)) || (head && t.includes(head));
+  });
+}
+function qReviewHTML(sid,u,q,bucket,k,done,picked,fref){
+  const correct = q.choices[q.answer];
+  const pickedText = picked==null ? "" : q.choices[picked];
+  const f = fref ? formulaById(u,fref) : null;
+  const pickedF = done===0 ? findChoiceFormula(u,pickedText||"") : null;
+  return `<div class="expl">${done===1?"正解。":"不正解。"}${md(q.expl||"",sid)}
+    ${done===0?`<div class="diffbox"><b>選んだもの:</b> ${md(pickedText||"不明",sid)}<br><b>正解:</b> ${md(correct,sid)}</div>`:""}
+    ${pickedF&&(!f||pickedF.id!==f.id)?`<div class="diffbox"><b>選んだ式の使いどころ:</b> ${md(pickedF.when||"",sid)}<br><span class="mini">問題文の条件と式の用途を見比べると、取り違えを減らせます。</span></div>`:""}
+    ${f?`<div class="diffbox"><b>正解の公式:</b> ${esc(f.name)}<br><b>使いどころ:</b> ${md(f.when||"",sid)}<br><span class="mini">${md(f.intuition||"",sid)}</span></div>
+      <div><a href="#s/${sid}/u/${u.id}/formula">該当の公式カードを見る</a></div>`:""}
+    <div class="rowbtns"><button onclick="resetQ('${sid}','${u.id}',${k.split(':')[1]},'${bucket}')">もう一回</button></div>
+  </div>`;
+}
+function qHTML(sid,u,q,i,bucket,fbucket,fref){
+  const s=st(sid); const k=u.id+":"+i; const done=s[bucket][k];
+  const pickKey=bucket+":"+k; const picked=s.pick[pickKey] ?? q.wrongPick ?? null;
+  const choices=q.choices.map((c,ci)=>{
+    let cls="choice";
+    if(done!==undefined){ if(ci===q.answer) cls+=" ok"; else if(done===0&&ci===picked) cls+=" ng"; }
+    return `<button class="${cls}" onclick="answerQ('${sid}','${u.id}',${i},${ci},'${bucket}','${fbucket||""}','${fref||""}')">${md(c,sid)}</button>`;
+  }).join("");
+  return `<div class="card"><div class="qtext">Q${i+1}. ${md(q.q,sid)}</div>${choices}
+    ${done!==undefined?qReviewHTML(sid,u,q,bucket,k,done,picked,fref):""}</div>`;
+}
+function answerQ(sid,uid,i,ci,bucket,fbucket,fref){
+  const d=DATA[sid], u=d.units.find(x=>x.id===uid);
+  const q=(bucket==="selq"?u.selectQuiz:u.quiz)[i];
+  if(st(sid)[bucket][uid+":"+i]!==undefined) return;
+  const ok = ci===q.answer ?1:0;
+  const s=st(sid); s[bucket][uid+":"+i]=ok; s.pick[bucket+":"+uid+":"+i]=ci;
+  if(fbucket && fref && ok){
+    s[fbucket][uid+":"+fref]=1;
+    const f=formulaById(u,fref);
+    reviewItem(sid,reviewKey("formula",uid,fref),"公式復習",f?.name||"公式",`s/${sid}/u/${uid}/formula`,true);
+  }
+  reviewItem(sid,reviewKey(bucket,uid,i),bucket==="selq"?"公式選択復習":"理解復習",q.q,`s/${sid}/u/${uid}/${bucket==="selq"?"select":"quiz"}`,!!ok);
+  if(!ok) logMistake(sid,{type:bucket==="selq"?"公式選択ミス":"理解クイズミス", title:q.q, detail:`選択: ${plain(q.choices[ci])} / 正解: ${plain(q.choices[q.answer])}`, href:`s/${sid}/u/${uid}/${bucket==="selq"?"select":"quiz"}`, advice:q.expl||""});
+  save(); render();
+}
+function resetQ(sid,uid,i,bucket){
+  const s=st(sid); delete s[bucket][uid+":"+i]; delete s.pick[bucket+":"+uid+":"+i]; save(); render();
+}
+
+/* --- 計算演習 --- */
+const probState={};
+function formulaHintHTML(sid,u,refs){
+  const fs=(refs||[]).map(id=>formulaById(u,id)).filter(Boolean);
+  if(!fs.length) return `<div class="hintbox">この問題は、まず問題文の量と単位を整理してから式を選びます。</div>`;
+  return `<div class="hintbox"><b>使う候補の公式</b>${fs.map(f=>`<div class="sheet-f"><b>${esc(f.name)}</b><div class="flatex" style="padding:4px">${tex(f.latex,true)}</div><div class="mini">${md(f.when||"",sid)}</div></div>`).join("")}</div>`;
+}
+function vSolve(sid,u){
+  return (u.problems||[]).map(p=>{
+    const variants=p.variants||[];
+    if(!variants.length) return `<div class="card"><span class="tag">${esc(p.pattern||"計算演習")}</span><div class="empty">この演習には問題データがありません</div></div>`;
+    const key=u.id+":"+p.id;
+    const ps=probState[key]||{v:0,step:0,hint:false,scratch:""};
+    const variant=variants[ps.v % variants.length];
+    const shown=variant.steps.slice(0,ps.step).map(stp=>`<div class="stepbox"><div class="slabel">${esc(stp.label)}</div><div>${md(stp.content,sid)}</div></div>`).join("");
+    const doneAll=ps.step>=variant.steps.length;
+    const status=st(sid).prob[key];
+    return `<div class="card">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <span class="tag">${esc(p.pattern)}</span>
+        <span class="mini">${status==="ok"?"習得":"未習得"} ｜ バリエーション ${ps.v%variants.length+1}/${variants.length}</span>
+      </div>
+      <div class="qtext" style="margin-top:8px">${md(variant.q,sid)}</div>
+      ${ps.step===0&&!doneAll?`<div class="hintbox"><b>まず自力で解く</b><div class="mini">紙か下のメモ欄で、式の選択、代入、単位確認までやってからヒントを開く。</div>
+        <textarea placeholder="途中式メモ欄(保存はこの画面を開いている間だけ)" oninput="probScratch('${key}',this.value)">${esc(ps.scratch||"")}</textarea></div>`:""}
+      ${ps.hint?formulaHintHTML(sid,u,p.formulaRefs):""}
+      ${shown}
+      ${doneAll?`<div class="expl"><b>答え: </b>${md(variant.answer,sid)}</div>
+        <div class="rowbtns">
+          <button class="primary" onclick="probResult('${sid}','${key}','ok')">自力で解けた</button>
+          <button onclick="probResult('${sid}','${key}','formula')">式を間違えた</button>
+          <button onclick="probResult('${sid}','${key}','calc')">計算を間違えた</button>
+          <button class="ghost" onclick="probNext('${key}',${variants.length})">数値を変えてもう一回</button>
+        </div>`
+      :`<div class="rowbtns">
+          <button onclick="probHint('${key}')">公式だけ見る</button>
+          <button class="primary" onclick="probStep('${key}')">${ps.step===0?"1ステップだけ見る":"次のステップ"}</button>
+          <button class="ghost" onclick="probState['${key}']={v:${ps.v},step:99,hint:true,scratch:probState['${key}']?.scratch||''};render()">全部見る</button>
+        </div>`}
+    </div>`;
+  }).join("") || '<p class="notice">問題なし</p>';
+}
+function probScratch(k,v){ const ps=probState[k]||{v:0,step:0,hint:false,scratch:""}; ps.scratch=v; probState[k]=ps; }
+function probHint(k){ const ps=probState[k]||{v:0,step:0,hint:false,scratch:""}; ps.hint=true; probState[k]=ps; render(); }
+function probStep(k){ const ps=probState[k]||{v:0,step:0,hint:false,scratch:""}; ps.step++; probState[k]=ps; render(); }
+function probNext(k,n){ const ps=probState[k]||{v:0,step:0,hint:false,scratch:""}; probState[k]={v:ps.v+1,step:0,hint:false,scratch:""}; render(); }
+function probResult(sid,key,r){
+  const s=st(sid); const [uid]=key.split(":"); const u=DATA[sid].units.find(x=>x.id===uid);
+  const p=(u.problems||[]).find(x=>uid+":"+x.id===key);
+  const ps=probState[key]||{v:0,step:0}; const variant=p?.variants?.[ps.v % (p?.variants?.length||1)];
+  if(r==="ok"){
+    s.prob[key]="ok";
+    reviewItem(sid,reviewKey("problem",uid,p?.id||key),"計算復習",p?.pattern||"計算演習",`s/${sid}/u/${uid}/solve`,true);
+    (p?.formulaRefs||[]).forEach(fr=>{
+      s.fsolve[uid+":"+fr]=1;
+      const f=formulaById(u,fr);
+      reviewItem(sid,reviewKey("formula",uid,fr),"公式復習",f?.name||"公式",`s/${sid}/u/${uid}/formula`,true);
+    });
+  }
+  else {
+    s.miss[r==="formula"?"formula":"calc"]++; delete s.prob[key];
+    reviewItem(sid,reviewKey("problem",uid,p?.id||key),"計算復習",p?.pattern||"計算演習",`s/${sid}/u/${uid}/solve`,false);
+    logMistake(sid,{type:r==="formula"?"式ミス":"計算ミス", title:p?.pattern||"計算演習", detail:plain(variant?.q||""), href:`s/${sid}/u/${uid}/solve`, advice:r==="formula"?"問題文の条件から、どの公式を選ぶかを先に言語化する。":"単位、桁、三角関数、符号を最後に確認する。"});
+  }
+  save(); const cur=probState[key]; if(cur){ cur.step=0; cur.hint=false; } render();
+}
+
+/* --- 直前モード --- */
+function sheetFilter(sid){ return meta().sheetFilters[sid] || meta().sheetFilters._legacy || "all"; }
+function setSheetFilter(sid,v){ meta().sheetFilters[sid]=v; save(); render(); }
+function mistakeSheetHTML(sid){
+  const rows=st(sid).mistakes;
+  if(!rows.length) return '<div class="empty">この科目の間違い記録はありません</div>';
+  return rows.map((m,i)=>`<div class="mistake">
+    <div><span class="tag">${esc(m.type)}</span><span class="mini">${esc(timeLabel(m.ts))}</span></div>
+    <b>${esc(m.title||"")}</b><div class="mini">${esc(m.detail||"")}</div>
+    ${m.advice?`<div class="diffbox">${md(m.advice,sid)}</div>`:""}
+    <div class="rowbtns"><button class="primary" onclick="nav('${m.href||`s/${sid}`}')">復習する</button><button onclick="removeMistake('${sid}',${i})">復習済みにする</button></div>
+  </div>`).join("");
+}
+function reviewSheetHTML(sid){
+  const rows=reviewDueItems(sid);
+  if(!rows.length) return '<div class="empty">今日が期限の復習はありません</div>';
+  return rows.map(r=>`<div class="sheet-f"><span class="tag">${esc(r.kind)}</span><b>${esc(r.title)}</b><div class="mini">${esc(r.sub)}</div><div class="rowbtns"><button class="primary" onclick="nav('${r.href}')">復習する</button></div></div>`).join("");
+}
+function sheet(sid){
+  const d=DATA[sid]; const filter=sheetFilter(sid);
+  let rows=[];
+  d.units.forEach(u=>(u.formulas||[]).forEach(f=>rows.push({u,f,stg:fstage(sid,u,f)})));
+  rows=rows.sort((a,b)=>a.stg-b.stg || (b.u.priority||0)-(a.u.priority||0));
+  if(filter==="unstarted") rows=rows.filter(r=>r.stg===0);
+  if(filter==="needSelect") rows=rows.filter(r=>r.stg<2);
+  if(filter==="needSolve") rows=rows.filter(r=>r.stg<3);
+  if(filter==="priority") rows=rows.filter(r=>(r.u.priority||1)===3);
+  const filters=[["all","全部"],["unstarted","未着手"],["needSelect","選べる未満"],["needSolve","解ける未満"],["priority","最頻出"],["review","復習期限"],["mistakes","間違いあり"]];
+  const formulaHTML=rows.map(({u,f,stg})=>`<div class="sheet-f">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <b>${esc(f.name)}</b><span><span class="mini">${esc(u.title)}</span> <span class="stage s${stg}">${STAGE_LABEL[stg]}</span></span>
+    </div>
+    <div class="flatex" style="padding:6px">${tex(f.latex,true)}</div>
+    <div class="mini">${(f.vars||[]).map(v=>`${tex(v.sym)}=${esc(v.meaning)}`).join("、 ")}</div>
+    <div class="mini">使いどころ: ${esc(f.when||"")}</div>
+    <div class="rowbtns"><button onclick="nav('s/${sid}/u/${u.id}/formula')">公式</button><button onclick="nav('s/${sid}/u/${u.id}/select')">選択</button><button onclick="nav('s/${sid}/u/${u.id}/solve')">演習</button></div>
+  </div>`).join("");
+  const body = filter==="mistakes" ? mistakeSheetHTML(sid) : filter==="review" ? reviewSheetHTML(sid) : (formulaHTML||'<div class="empty">この条件の公式はありません</div>');
+  app.innerHTML=`<div class="topbar"><button class="ghost" onclick="nav('s/${sid}')">←</button>
+    <div><b>直前モード</b><div class="crumb">${esc(d.name)} ｜ 弱い公式が上に来ます</div></div></div>
+    <div class="filterbar">${filters.map(([k,l])=>`<button class="${filter===k?'on':''}" onclick="setSheetFilter('${sid}','${k}')">${l}</button>`).join("")}</div>
+    <div class="card"><div class="rowbtns"><button onclick="nav('s/${sid}/mistakes')">間違いノート</button><button onclick="nav('s/${sid}')">科目トップ</button></div>${body}</div>`;
+}
+
+/* --- 学習カレンダー --- */
+function planPhase(sid,left,offset){
+  if(left===0) return {kind:"試験日", title:"直前モードで公式だけ確認", href:`s/${sid}/sheet`};
+  if(left===1) return {kind:"前日", title:"間違いノートと解ける未満の公式を確認", href:st(sid).mistakes.length?`s/${sid}/mistakes`:`s/${sid}/sheet`};
+  const tasks=buildTasks(sid,12);
+  if(!tasks.length) return {kind:"維持", title:"直前モードで軽く確認", href:`s/${sid}/sheet`};
+  let pool;
+  if(left<=3) pool=tasks.filter(t=>t.kind==="計算演習"||t.kind==="間違い復習");
+  else if(left<=7) pool=tasks.filter(t=>t.kind==="公式選択"||t.kind==="計算演習");
+  else pool=tasks.filter(t=>t.kind==="解説"||t.kind==="公式暗記");
+  if(!pool.length) pool=tasks;
+  const picked=pool[offset%pool.length];
+  return {kind:picked.kind, title:picked.title, href:picked.href};
+}
+function calendarView(){
+  const today=todayStr();
+  const entries=ORDER.filter(id=>DATA[id]&&meta().dates[id]).map(id=>({id,date:meta().dates[id],left:daysUntil(meta().dates[id])})).sort((a,b)=>a.left-b.left);
+  const upcoming=entries.filter(e=>e.left>=0);
+  const maxLeft=upcoming.length?Math.max(...upcoming.map(e=>e.left)):0;
+  const span=Math.min(Math.max(maxLeft,0),21);
+  const settings=`<div class="card"><div class="fname"><b>試験日設定</b><span class="mini">各科目の日程を入れると予定が自動更新されます</span></div>
+    <div class="dategrid">${ORDER.filter(id=>DATA[id]).map(id=>`<label class="date-row"><span><b>${esc(DATA[id].name)}</b><br><span class="mini">${esc(testBadge(id))}</span></span><input type="date" value="${esc(meta().dates[id]||"")}" onchange="setTestDate('${id}',this.value)"></label>`).join("")}</div></div>`;
+  const days = upcoming.length ? Array.from({length:span+1},(_,i)=>{
+    const day=addDaysStr(today,i);
+    const items=upcoming.map(e=>{
+      const left=daysBetween(day,e.date);
+      if(left<0 || left>21) return "";
+      const p=planPhase(e.id,left,i);
+      return `<div class="planitem"><div><span class="tag">${esc(DATA[e.id].name)}</span><b>${esc(p.kind)}</b><div class="mini">${esc(p.title)} / ${left===0?"当日":`あと${left}日`}</div></div><button onclick="nav('${p.href}')">開く</button></div>`;
+    }).filter(Boolean).join("");
+    return items?`<div class="daycard"><div class="dayhead"><b>${dateLabel(day)}</b><span class="mini">${i===0?"今日":day}</span></div>${items}</div>`:"";
+  }).join("") : `<div class="empty">まず試験日を設定してください</div>`;
+  const far=upcoming.filter(e=>e.left>21).map(e=>`${DATA[e.id].name}: あと${e.left}日`).join(" / ");
+  app.innerHTML=`<div class="topbar"><button class="ghost" onclick="nav('home')">←</button><h1>学習カレンダー</h1><span class="spacer"></span><button onclick="nav('search')">検索</button></div>
+    ${settings}<div class="card"><b>逆算スケジュール</b><div class="mini">21日先まで表示。直前ほど計算演習と間違い復習を厚くします。</div>${far?`<div class="notice">21日より先: ${esc(far)}</div>`:""}<div class="calendar">${days}</div></div>`;
+}
+
+/* --- 検索 --- */
+function searchResultsHTML(q){
+  const key=plain(q).toLowerCase();
+  if(!key) return `<div class="empty">公式名、用語、計算手順、クイズ、間違いノートまで検索できます</div>`;
+  const res=[];
+  function hit(txt){ return plain(txt).toLowerCase().includes(key); }
+  ORDER.filter(id=>DATA[id]).forEach(sid=>{
+    const d=DATA[sid], ss=st(sid);
+    if(hit(d.name)||hit(d.examTips)) res.push({kind:"科目", title:d.name, sub:d.examTips, href:`s/${sid}`});
+    (ss.mistakes||[]).forEach(m=>{ if(hit(m.type)||hit(m.title)||hit(m.detail)||hit(m.advice)) res.push({kind:"ミス", title:m.title||m.type, sub:`${m.type} / ${m.detail||m.advice||""}`, href:m.href||`s/${sid}/mistakes`}); });
+    (d.glossary||[]).forEach(g=>{ if(hit(g.term)||hit(g.reading)||hit(g.def)) res.push({kind:"用語", title:g.term, sub:g.def, href:`s/${sid}`}); });
+    (d.units||[]).forEach(u=>{
+      if(hit(u.title)) res.push({kind:"単元", title:u.title, sub:d.name, href:`s/${sid}/u/${u.id}/learn`});
+      (u.sections||[]).forEach(sec=>{ if(hit(sec.heading)||hit(sec.body)) res.push({kind:"解説", title:sec.heading, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/learn`}); });
+      (u.formulas||[]).forEach(f=>{
+        const vars=(f.vars||[]).map(v=>`${v.sym} ${v.meaning} ${v.unit||""}`).join(" ");
+        if(hit(f.name)||hit(f.latex)||hit(f.when)||hit(f.intuition)||hit(f.derivation)||hit(vars)) res.push({kind:"公式", title:f.name, sub:`${d.name} / ${plain(f.when||"")}`, href:`s/${sid}/u/${u.id}/formula`});
+      });
+      (u.selectQuiz||[]).forEach((x,i)=>{ if(hit(x.q)||hit(x.expl)||x.choices?.some(hit)) res.push({kind:"公式選択", title:x.q, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/select`}); });
+      (u.quiz||[]).forEach((x,i)=>{ if(hit(x.q)||hit(x.expl)||x.choices?.some(hit)) res.push({kind:"クイズ", title:x.q, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/quiz`}); });
+      (u.problems||[]).forEach(p=>{
+        const body=(p.variants||[]).map(v=>`${v.q} ${v.answer} ${(v.steps||[]).map(st=>`${st.label} ${st.content}`).join(" ")}`).join(" ");
+        if(hit(p.pattern)||hit(body)) res.push({kind:"計算", title:p.pattern, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/solve`});
+      });
+    });
+  });
+  if(!res.length) return `<div class="empty">該当なし</div>`;
+  return res.slice(0,80).map(r=>`<div class="result"><span class="tag">${esc(r.kind)}</span><b>${esc(r.title)}</b><div class="mini">${esc(plain(r.sub).slice(0,160))}</div><div class="rowbtns"><button onclick="nav('${r.href}')">開く</button></div></div>`).join("");
+}
+function drawSearchResults(){
+  const input=$("#searchInput"); if(!input) return;
+  meta().search=input.value; save();
+  $("#searchResults").innerHTML=searchResultsHTML(input.value);
+}
+function searchView(){
+  const q=meta().search||"";
+  app.innerHTML=`<div class="topbar"><button class="ghost" onclick="nav('home')">←</button><h1>検索</h1><span class="spacer"></span><button onclick="nav('calendar')">学習カレンダー</button></div>
+    <div class="card"><input id="searchInput" class="searchbox" placeholder="例: ランキン、せん断、たわみ角、ベルヌーイ" value="${esc(q)}" oninput="drawSearchResults()" autofocus>
+      <div id="searchResults">${searchResultsHTML(q)}</div></div>`;
+}
+
+/* --- 間違いノート --- */
+function logMistake(sid,item){
+  const s=st(sid);
+  s.mistakes.unshift(Object.assign({ts:Date.now()}, item));
+  if(s.mistakes.length>80) s.mistakes.length=80;
+}
+function timeLabel(ts){
+  const d=new Date(ts), z=n=>String(n).padStart(2,"0");
+  return `${d.getMonth()+1}/${d.getDate()} ${z(d.getHours())}:${z(d.getMinutes())}`;
+}
+function removeMistake(sid,i){ st(sid).mistakes.splice(i,1); save(); render(); }
+function addManualMistake(sid){
+  const title=$("#manualMistakeTitle")?.value?.trim();
+  const detail=$("#manualMistakeDetail")?.value?.trim();
+  if(!title && !detail) return;
+  logMistake(sid,{type:"手動メモ", title:title||"復習メモ", detail:detail||"", href:`s/${sid}/mistakes`, advice:"自分で気づいた引っかかり。次に同じ条件が出たら、先にここを確認する。"});
+  save(); render();
+}
+function clearMistakes(sid){
+  if(confirm("この科目の間違いノートと式/計算ミス累計をリセットしますか？")){
+    const s=st(sid); s.mistakes=[]; s.miss={formula:0,calc:0}; save(); render();
+  }
+}
+function mistakesView(sid){
+  const d=DATA[sid], rows=st(sid).mistakes;
+  const html=rows.length?rows.map((m,i)=>`<div class="mistake">
+    <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap"><span class="tag">${esc(m.type)}</span><span class="mini">${esc(timeLabel(m.ts))}</span></div>
+    <b>${esc(m.title||"")}</b><div class="mini">${esc(m.detail||"")}</div>
+    ${m.advice?`<div class="diffbox">${md(m.advice,sid)}</div>`:""}
+    <div class="rowbtns"><button class="primary" onclick="nav('${m.href||`s/${sid}`}')">復習する</button><button onclick="removeMistake('${sid}',${i})">復習済みにする</button></div>
+  </div>`).join(""):`<div class="empty">まだ間違いは記録されていません</div>`;
+  app.innerHTML=`<div class="topbar"><button class="ghost" onclick="nav('s/${sid}')">←</button><h1>間違いノート</h1><div class="crumb">${esc(d.name)}</div></div>
+    <div class="card"><div class="statgrid"><div class="st"><b>${rows.length}</b><div class="mini">記録件数</div></div><div class="st"><b>${st(sid).miss.formula}</b><div class="mini">式ミス</div></div><div class="st"><b>${st(sid).miss.calc}</b><div class="mini">計算ミス</div></div></div>
+      <div class="hintbox"><b>手動で追加</b><input id="manualMistakeTitle" style="width:100%;margin-top:8px" placeholder="例: ランキンとクーロンを混同した"><textarea id="manualMistakeDetail" placeholder="何を間違えたか、次にどう確認するか"></textarea><div class="rowbtns"><button class="primary" onclick="addManualMistake('${sid}')">追加</button></div></div>
+      <div class="rowbtns"><button onclick="nav('s/${sid}/sheet')">直前モードへ</button>${rows.length?`<button class="ghost" onclick="clearMistakes('${sid}')">リセット</button>`:""}</div></div>${html}`;
+}
+
+
+/* --- 構造図シミュレータ --- */
+const BEAM_DEFAULT = {mode:"template", support:"simple", load:"point", L:6, P:20, a:3, w:5, EI:20000, LLabel:"", PLabel:"", aLabel:"", wLabel:"", EILabel:"", tool:"force", items:[]};
+const BEAM_TOOLS = {pin:"ピン", roller:"ローラー", fixed:"固定端", force:"力", moment:"モーメント"};
+function num(v, fallback){ const n=Number(v); return Number.isFinite(n)?n:fallback; }
+function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
+function fmt(n,d=2){
+  if(!Number.isFinite(n)) return "-";
+  const a=Math.abs(n);
+  const digits=a>=100?0:a>=10?1:d;
+  return Number(n).toFixed(digits).replace(/\.0+$/,"").replace(/(\.\d*?)0+$/,"$1");
+}
+function beamCleanLabel(v){ return String(v||"").replace(/[<>]/g,"").slice(0,18); }
+function beamItem(type,x,extra={}){
+  const item={type, x, xLabel:beamCleanLabel(extra.xLabel||"")};
+  if(type==="force"){ item.P=extra.P ?? 20; item.PLabel=beamCleanLabel(extra.PLabel||""); }
+  if(type==="moment"){ item.M=extra.M ?? 20; item.MLabel=beamCleanLabel(extra.MLabel||""); }
+  return item;
+}
+function beamDefaultItems(b){
+  const x=clamp(num(b.a,b.L/2),0.05,b.L);
+  if(b.support==="cantilever") return [beamItem("fixed",0), beamItem("force",x,{P:b.P})];
+  return [beamItem("pin",0), beamItem("roller",b.L), beamItem("force",x,{P:b.P})];
+}
+function beamState(sid){
+  const m=meta();
+  if(!m.beam || typeof m.beam !== "object" || Array.isArray(m.beam)) m.beam={};
+  if(!m.beam[sid]) m.beam[sid]=Object.assign({},BEAM_DEFAULT);
+  return beamNormalize(m.beam[sid]);
+}
+function beamNormalize(b){
+  b.mode = b.mode==="free" ? "free" : "template";
+  b.support = b.support==="cantilever" ? "cantilever" : "simple";
+  b.load = b.load==="uniform" ? "uniform" : "point";
+  b.tool = BEAM_TOOLS[b.tool] ? b.tool : "force";
+  b.L = clamp(num(b.L,BEAM_DEFAULT.L),2,12);
+  b.P = clamp(num(b.P,BEAM_DEFAULT.P),-80,80);
+  if(Math.abs(b.P)<0.001) b.P=20;
+  b.w = clamp(num(b.w,BEAM_DEFAULT.w),0.5,30);
+  b.EI = clamp(num(b.EI,BEAM_DEFAULT.EI),1000,200000);
+  ["LLabel","PLabel","aLabel","wLabel","EILabel"].forEach(k=>b[k]=beamCleanLabel(b[k]||""));
+  const maxA = b.support==="simple" ? b.L-0.05 : b.L;
+  b.a = clamp(num(b.a,b.L/2),0.05,maxA);
+  b.items = Array.isArray(b.items) ? b.items.map(it=>beamNormalizeItem(it,b)).filter(Boolean).slice(0,14) : [];
+  if(!b.items.length) b.items = beamDefaultItems(b);
+  return b;
+}
+function beamNormalizeItem(it,b){
+  const type=BEAM_TOOLS[it?.type] ? it.type : null;
+  if(!type) return null;
+  const x=clamp(num(it.x,b.L/2),0,b.L), xLabel=beamCleanLabel(it.xLabel||"");
+  if(type==="force") return {type,x,xLabel,P:clamp(num(it.P ?? it.value,20),-120,120),PLabel:beamCleanLabel(it.PLabel||"")};
+  if(type==="moment") return {type,x,xLabel,M:clamp(num(it.M ?? it.value,20),-300,300),MLabel:beamCleanLabel(it.MLabel||"")};
+  return {type,x,xLabel};
+}
+function beamValLabel(label,value,unit=""){ return label ? label : `${fmt(value,1)}${unit}`; }
+function beamXLabel(it){ return it.xLabel || fmt(it.x,1); }
+function beamLabelKey(k){ return ({L:"LLabel",P:"PLabel",a:"aLabel",w:"wLabel",EI:"EILabel"})[k] || ""; }
+function beamInputValue(b,k,value){
+  const lk=beamLabelKey(k);
+  return lk && b[lk] ? b[lk] : fmt(value,2);
+}
+function beamSetSymbol(sid,k,v){ const b=beamState(sid); b[k]=beamCleanLabel(v); beamNormalize(b); save(); render(); }
+function beamSetMaybeSymbol(sid,k,v){
+  const b=beamState(sid), raw=String(v||"").trim(), lk=beamLabelKey(k);
+  const n=Number(raw.replace(/,/g,""));
+  if(raw==="" && lk) b[lk]="";
+  else if(Number.isFinite(n)){ b[k]=n; if(lk) b[lk]=""; }
+  else if(lk) b[lk]=beamCleanLabel(raw);
+  beamNormalize(b); save(); render();
+}
+function beamSetItemSmart(sid,i,k,v){
+  const b=beamState(sid), it=b.items[i]; if(!it) return;
+  const raw=String(v||"").trim(), n=Number(raw.replace(/,/g,""));
+  if(k==="x"){
+    if(raw==="") it.xLabel="";
+    else if(Number.isFinite(n)){ it.x=n; it.xLabel=""; }
+    else it.xLabel=beamCleanLabel(raw);
+  }
+  if(k==="P"){
+    if(raw==="") it.PLabel="";
+    else if(Number.isFinite(n)){ it.P=n; it.PLabel=""; }
+    else it.PLabel=beamCleanLabel(raw);
+  }
+  if(k==="M"){
+    if(raw==="") it.MLabel="";
+    else if(Number.isFinite(n)){ it.M=n; it.MLabel=""; }
+    else it.MLabel=beamCleanLabel(raw);
+  }
+  beamNormalize(b); save(); render();
+}
+function beamSet(sid,k,v){
+  const b=beamState(sid);
+  if(k==="support" || k==="load" || k==="mode" || k==="tool") b[k]=v;
+  else b[k]=Number(v);
+  if(k==="mode" && v==="free" && !b.items.length) b.items=beamDefaultItems(b);
+  beamNormalize(b);
+  save(); render();
+}
+function beamSetMode(sid,mode){
+  const b=beamState(sid);
+  b.mode=mode;
+  if(mode==="free") b.items=beamDefaultItems(b);
+  beamNormalize(b); save(); render();
+}
+function beamSetTool(sid,tool){ const b=beamState(sid); b.tool=tool; beamNormalize(b); save(); render(); }
+function beamSetItem(sid,i,k,v){
+  const b=beamState(sid);
+  const it=b.items[i]; if(!it) return;
+  if(k==="x") it.x=Number(v);
+  if(k==="P") it.P=Number(v);
+  if(k==="M") it.M=Number(v);
+  if(k==="xLabel") it.xLabel=beamCleanLabel(v);
+  if(k==="PLabel") it.PLabel=beamCleanLabel(v);
+  if(k==="MLabel") it.MLabel=beamCleanLabel(v);
+  beamNormalize(b); save(); render();
+}
+function beamAddItem(sid,type,x){
+  const b=beamState(sid);
+  if(b.items.length>=14) return;
+  b.items.push(beamItem(type,clamp(num(x,b.L/2),0,b.L)));
+  beamNormalize(b); save(); render();
+}
+function beamRemoveItem(sid,i){ const b=beamState(sid); b.items.splice(i,1); beamNormalize(b); save(); render(); }
+function beamPreset(sid,type){
+  const b=beamState(sid);
+  if(type==="cantilever") b.items=[beamItem("fixed",0), beamItem("force",b.L,{P:20})];
+  else b.items=[beamItem("pin",0), beamItem("roller",b.L), beamItem("force",b.L/2,{P:20})];
+  b.mode="free"; beamNormalize(b); save(); render();
+}
+function beamReset(sid){
+  const m=meta(); if(!m.beam || typeof m.beam !== "object") m.beam={};
+  m.beam[sid]=Object.assign({},BEAM_DEFAULT);
+  save(); render();
+}
+function beamPick(sid,event){
+  const b=beamState(sid);
+  const rect=event.currentTarget.getBoundingClientRect();
+  const xSvg=((event.clientX-rect.left)/rect.width)*760;
+  const ratio=clamp((xSvg-70)/640,0,1);
+  const at=clamp(ratio*b.L,0,b.L);
+  if(b.mode==="free"){ beamAddItem(sid,b.tool,at); return; }
+  b.load="point";
+  b.a=clamp(at,0.05,b.support==="simple"?b.L-0.05:b.L);
+  save(); render();
+}
+function beamAt(b,x){
+  const L=b.L, P=b.P, a=b.a, w=b.w, EI=b.EI;
+  let V=0, M=0, y=0;
+  if(b.support==="simple" && b.load==="point"){
+    const bb=L-a, RA=P*bb/L;
+    V = x<a ? RA : RA-P;
+    M = x<=a ? RA*x : RA*x-P*(x-a);
+    y = x<=a
+      ? P*bb*x*(L*L-bb*bb-x*x)/(6*L*EI)
+      : P*a*(L-x)*(L*L-a*a-(L-x)*(L-x))/(6*L*EI);
+  }else if(b.support==="simple"){
+    const RA=w*L/2;
+    V = RA-w*x;
+    M = RA*x-w*x*x/2;
+    y = w*x*(Math.pow(L,3)-2*L*x*x+x*x*x)/(24*EI);
+  }else if(b.load==="point"){
+    V = x<a ? -P : 0;
+    M = x<=a ? -P*(a-x) : 0;
+    y = x<=a ? P*x*x*(3*a-x)/(6*EI) : P*a*a*(3*x-a)/(6*EI);
+  }else{
+    V = -w*(L-x);
+    M = -w*Math.pow(L-x,2)/2;
+    y = w*x*x*(6*L*L-4*L*x+x*x)/(24*EI);
+  }
+  return {x,N:0,V,M,Y:y};
+}
+function beamEventXs(b){
+  const xs=new Set([0,b.L]);
+  for(let i=0;i<=160;i++) xs.add(Number((b.L*i/160).toFixed(5)));
+  (b.items||[]).forEach(it=>{
+    const e=Math.max(0.0001,b.L/10000);
+    xs.add(Number(clamp(it.x-e,0,b.L).toFixed(5)));
+    xs.add(Number(it.x.toFixed(5)));
+    xs.add(Number(clamp(it.x+e,0,b.L).toFixed(5)));
+  });
+  return Array.from(xs).sort((a,b)=>a-b);
+}
+function beamInterp(xs,vals,x){
+  if(x<=xs[0]) return vals[0];
+  for(let i=1;i<xs.length;i++){
+    if(x<=xs[i]){
+      const t=(x-xs[i-1])/(xs[i]-xs[i-1]||1);
+      return vals[i-1]+(vals[i]-vals[i-1])*t;
+    }
+  }
+  return vals[vals.length-1];
+}
+function beamSolveLinear(A,b){
+  const n=b.length;
+  if(n===0) return [];
+  const M=A.map((row,i)=>row.slice().concat([b[i]]));
+  for(let col=0; col<n; col++){
+    let pivot=col;
+    for(let r=col+1;r<n;r++) if(Math.abs(M[r][col])>Math.abs(M[pivot][col])) pivot=r;
+    if(Math.abs(M[pivot][col])<1e-9) return null;
+    if(pivot!==col){ const tmp=M[col]; M[col]=M[pivot]; M[pivot]=tmp; }
+    const div=M[col][col];
+    for(let c=col;c<=n;c++) M[col][c]/=div;
+    for(let r=0;r<n;r++){
+      if(r===col) continue;
+      const f=M[r][col];
+      for(let c=col;c<=n;c++) M[r][c]-=f*M[col][c];
+    }
+  }
+  return M.map(row=>row[n]);
+}
+function beamNearestNode(nodes,x){
+  let best=0, d=Infinity;
+  nodes.forEach((v,i)=>{ const dd=Math.abs(v-x); if(dd<d){ d=dd; best=i; } });
+  return best;
+}
+function beamElementSample(EI,x1,x2,u,x){
+  const L=x2-x1, r=L?clamp((x-x1)/L,0,1):0;
+  const [v1,t1,v2,t2]=u;
+  const N1=1-3*r*r+2*r*r*r, N2=L*(r-2*r*r+r*r*r), N3=3*r*r-2*r*r*r, N4=L*(-r*r+r*r*r);
+  const v=N1*v1+N2*t1+N3*v2+N4*t2;
+  const d2=(-6+12*r)/L/L*v1 + (-4+6*r)/L*t1 + (6-12*r)/L/L*v2 + (-2+6*r)/L*t2;
+  const d3=12/L/L/L*v1 + 6/L/L*t1 - 12/L/L/L*v2 + 6/L/L*t2;
+  return {Y:-v, M:EI*d2, V:-EI*d3};
+}
+function beamApplyFreeDeflection(b,pts,system,anchors){
+  if(!pts.length){ return; }
+  const sign=system==="fixed" ? -1 : 1;
+  const xs=pts.map(p=>p.x), th=[0], yy=[0];
+  for(let i=1;i<pts.length;i++){
+    const dx=xs[i]-xs[i-1];
+    const k0=sign*pts[i-1].M/b.EI, k1=sign*pts[i].M/b.EI;
+    th[i]=th[i-1]+0.5*(k0+k1)*dx;
+    yy[i]=yy[i-1]+0.5*(th[i-1]+th[i])*dx;
+  }
+  let c1=0,c0=0;
+  if(system==="simple" && anchors.length>=2){
+    const a=anchors[0], bb=anchors[1], ya=beamInterp(xs,yy,a), yb=beamInterp(xs,yy,bb);
+    c1=-(yb-ya)/(bb-a||1); c0=-ya-c1*a;
+  }else if(system==="fixed" && anchors.length){
+    const xf=anchors[0], tf=beamInterp(xs,th,xf), yf=beamInterp(xs,yy,xf);
+    c1=-tf; c0=-yf-c1*xf;
+  }
+  pts.forEach((p,i)=>{ p.Y=yy[i]+c1*p.x+c0; });
+}
+function beamFreeCalc(b){
+  const nodes=Array.from(new Set([0,b.L].concat((b.items||[]).map(it=>Number(it.x.toFixed(5)))))).sort((a,b)=>a-b);
+  if(nodes.length<2) return {b, pts:[], reactions:[], valid:false, note:"梁の長さが足りません。", mode:"free", maxN:0,maxV:0,maxM:0,maxY:0,yMax:0,yAt:{x:0,Y:0}};
+  const n=nodes.length, nd=n*2, K=Array.from({length:nd},()=>Array(nd).fill(0)), F=Array(nd).fill(0), EI=b.EI;
+  for(let e=0;e<n-1;e++){
+    const L=nodes[e+1]-nodes[e]; if(L<=1e-6) continue;
+    const k=EI/Math.pow(L,3);
+    const ke=[[12,6*L,-12,6*L],[6*L,4*L*L,-6*L,2*L*L],[-12,-6*L,12,-6*L],[6*L,2*L*L,-6*L,4*L*L]].map(row=>row.map(v=>v*k));
+    const dof=[2*e,2*e+1,2*(e+1),2*(e+1)+1];
+    for(let i=0;i<4;i++) for(let j=0;j<4;j++) K[dof[i]][dof[j]]+=ke[i][j];
+  }
+  (b.items||[]).forEach(it=>{
+    const idx=beamNearestNode(nodes,it.x);
+    if(it.type==="force") F[2*idx]-=it.P;
+    if(it.type==="moment") F[2*idx+1]-=it.M;
+  });
+  const constrained=new Set();
+  (b.items||[]).forEach(it=>{
+    const idx=beamNearestNode(nodes,it.x);
+    if(it.type==="pin"||it.type==="roller"||it.type==="fixed") constrained.add(2*idx);
+    if(it.type==="fixed") constrained.add(2*idx+1);
+  });
+  const free=Array.from({length:nd},(_,i)=>i).filter(i=>!constrained.has(i));
+  const A=free.map(i=>free.map(j=>K[i][j]));
+  const rhs=free.map(i=>F[i]);
+  const sol=beamSolveLinear(A,rhs);
+  if(!sol) return {b, pts:beamEventXs(b).map(x=>({x,N:0,V:0,M:0,Y:0})), reactions:[], valid:false, note:"拘束が不足しているか、支点条件が機構になっています。支点を追加してください。", mode:"free", maxN:0,maxV:0,maxM:0,maxY:0,yMax:0,yAt:{x:0,Y:0}};
+  const U=Array(nd).fill(0); free.forEach((dof,i)=>U[dof]=sol[i]);
+  const R=K.map(row=>row.reduce((a,v,j)=>a+v*U[j],0)).map((v,i)=>v-F[i]);
+  const reactions=(b.items||[]).filter(it=>it.type==="pin"||it.type==="roller"||it.type==="fixed").map(it=>{
+    const idx=beamNearestNode(nodes,it.x);
+    return {type:it.type,x:it.x,R:R[2*idx],MA:it.type==="fixed"?-R[2*idx+1]:undefined};
+  });
+  const xs=beamEventXs(b), pts=xs.map(x=>{
+    let e=Math.max(0,nodes.findIndex((v,i)=>i<n-1 && x>=v-1e-7 && x<=nodes[i+1]+1e-7));
+    if(e<0) e=n-2;
+    const dof=[2*e,2*e+1,2*(e+1),2*(e+1)+1], sample=beamElementSample(EI,nodes[e],nodes[e+1],dof.map(i=>U[i]),x);
+    return {x,N:0,V:sample.V,M:sample.M,Y:sample.Y};
+  });
+  const maxAbs=k=>Math.max(0,...pts.map(p=>Math.abs(p[k])));
+  const yAt=pts.reduce((best,p)=>Math.abs(p.Y)>Math.abs(best.Y)?p:best,pts[0]||{x:0,Y:0});
+  return {b, pts, reactions, valid:true, note:"剛性法で不静定ばりまで計算しています。", mode:"free", maxN:maxAbs("N"), maxV:maxAbs("V"), maxM:maxAbs("M"), maxY:maxAbs("Y"), yMax:Math.abs(yAt.Y), yAt};
+}
+function beamCalc(b){
+  if(b.mode==="free") return beamFreeCalc(b);
+  const pts=[];
+  for(let i=0;i<=120;i++){
+    const x=b.L*i/120;
+    pts.push(beamAt(b,x));
+  }
+  let RA=0,RB=0,MA=0;
+  if(b.support==="simple" && b.load==="point"){ RA=b.P*(b.L-b.a)/b.L; RB=b.P*b.a/b.L; }
+  else if(b.support==="simple"){ RA=RB=b.w*b.L/2; }
+  else if(b.load==="point"){ RA=b.P; MA=b.P*b.a; }
+  else { RA=b.w*b.L; MA=b.w*b.L*b.L/2; }
+  const maxAbs=k=>Math.max(0,...pts.map(p=>Math.abs(p[k])));
+  const yAt=pts.reduce((best,p)=>Math.abs(p.Y)>Math.abs(best.Y)?p:best,pts[0]);
+  return {b, pts, RA, RB, MA, valid:true, mode:"template", maxN:maxAbs("N"), maxV:maxAbs("V"), maxM:maxAbs("M"), maxY:maxAbs("Y"), yMax:Math.abs(yAt.Y), yAt};
+}
+function symbolControl(sid,k,label,ph){
+  const b=beamState(sid);
+  return `<label class="simctrl"><span>${esc(label)}</span><input style="width:100%" value="${esc(b[k]||"")}" placeholder="${esc(ph||"")}" onchange="beamSetSymbol('${sid}','${k}',this.value)"></label>`;
+}
+function rangeControl(sid,k,label,min,max,step,unit){
+  const b=beamState(sid), val=b[k];
+  return `<label class="simctrl"><span>${esc(label)}</span><div class="ctrlrow">
+    <input type="range" min="${min}" max="${max}" step="${step}" value="${esc(val)}" oninput="beamSet('${sid}','${k}',this.value)">
+    <input type="text" value="${esc(beamInputValue(b,k,val))}" onchange="beamSetMaybeSymbol('${sid}','${k}',this.value)">
+    <em>${esc(unit)}</em>
+  </div></label>`;
+}
+function beamModeButtons(sid,b){
+  return `<div class="rowbtns"><button class="${b.mode==="template"?"primary":""}" onclick="beamSetMode('${sid}','template')">テンプレ</button><button class="${b.mode==="free"?"primary":""}" onclick="beamSetMode('${sid}','free')">自由配置</button></div>`;
+}
+function beamControls(sid){
+  const b=beamState(sid);
+  const base=`${beamModeButtons(sid,b)}${rangeControl(sid,"L","スパン L",2,12,0.1,"m")}${symbolControl(sid,"LLabel","L の表示記号","L")}`;
+  if(b.mode==="free") return `${base}${rangeControl(sid,"EI","曲げ剛性 EI",1000,200000,1000,"kN m²")}${symbolControl(sid,"EILabel","EI の表示記号","EI")}
+    <div class="hintbox"><b>梁上をクリックで追加</b><div class="mini">下のツールを選んで、梁の好きな位置をクリックします。力は + が下向き、モーメントは + が時計回りです。</div></div>
+    <div class="beamtools">${Object.entries(BEAM_TOOLS).map(([k,l])=>`<button class="${b.tool===k?'on':''}" onclick="beamSetTool('${sid}','${k}')">${esc(l)}</button>`).join("")}</div>
+    <div class="rowbtns"><button onclick="beamPreset('${sid}','simple')">単純ばり配置</button><button onclick="beamPreset('${sid}','cantilever')">片持ち配置</button></div>
+    ${beamItemList(sid,b)}
+    <div class="rowbtns"><button class="ghost" onclick="beamReset('${sid}')">初期値に戻す</button></div>`;
+  const aMax=b.support==="simple"?Math.max(0.1,b.L-0.05):b.L;
+  return `${base}<div class="selectrow">
+    <label class="simctrl"><span>支持条件</span><select onchange="beamSet('${sid}','support',this.value)">
+      <option value="simple" ${b.support==="simple"?"selected":""}>単純ばり</option>
+      <option value="cantilever" ${b.support==="cantilever"?"selected":""}>片持ちばり</option>
+    </select></label>
+    <label class="simctrl"><span>荷重</span><select onchange="beamSet('${sid}','load',this.value)">
+      <option value="point" ${b.load==="point"?"selected":""}>集中荷重</option>
+      <option value="uniform" ${b.load==="uniform"?"selected":""}>等分布荷重</option>
+    </select></label>
+  </div>
+  ${b.load==="point"?rangeControl(sid,"P","集中荷重 P",1,80,0.5,"kN")+symbolControl(sid,"PLabel","P の表示記号","P"):""}
+  ${b.load==="point"?rangeControl(sid,"a","荷重位置 a",0.05,aMax,0.05,"m")+symbolControl(sid,"aLabel","a の表示記号","a"):""}
+  ${b.load==="uniform"?rangeControl(sid,"w","等分布荷重 w",0.5,30,0.5,"kN/m")+symbolControl(sid,"wLabel","w の表示記号","w"):""}
+  ${rangeControl(sid,"EI","曲げ剛性 EI",1000,200000,1000,"kN m²")}${symbolControl(sid,"EILabel","EI の表示記号","EI")}
+  <div class="rowbtns"><button class="ghost" onclick="beamReset('${sid}')">初期値に戻す</button></div>`;
+}
+function beamItemList(sid,b){
+  const rows=(b.items||[]).map((it,i)=>{
+    const val=it.type==="force" ? `<label><span>P kN (+下)</span><input type="text" value="${esc(it.PLabel||fmt(it.P,2))}" onchange="beamSetItemSmart('${sid}',${i},'P',this.value)"></label><label><span>P 記号</span><input value="${esc(it.PLabel||"")}" placeholder="P" onchange="beamSetItem('${sid}',${i},'PLabel',this.value)"></label>`
+      : it.type==="moment" ? `<label><span>M kN m (+時計)</span><input type="text" value="${esc(it.MLabel||fmt(it.M,2))}" onchange="beamSetItemSmart('${sid}',${i},'M',this.value)"></label><label><span>M 記号</span><input value="${esc(it.MLabel||"")}" placeholder="M" onchange="beamSetItem('${sid}',${i},'MLabel',this.value)"></label>`
+      : `<div class="mini">反力を自動計算</div>`;
+    return `<div class="itemrow">
+      <div class="itemrow-head"><span class="itemkind">${esc(BEAM_TOOLS[it.type])}</span><button class="ghost" onclick="beamRemoveItem('${sid}',${i})">削除</button></div>
+      <div class="itemgrid"><label><span>x m</span><input type="text" value="${esc(it.xLabel||fmt(it.x,2))}" onchange="beamSetItemSmart('${sid}',${i},'x',this.value)"></label><label><span>x 記号</span><input value="${esc(it.xLabel||"")}" placeholder="a" onchange="beamSetItem('${sid}',${i},'xLabel',this.value)"></label>${val}</div>
+    </div>`;
+  }).join("");
+  return `<div class="itemlist">${rows||'<div class="empty">まだ何も置いていません</div>'}</div>`;
+}
+function beamSupportSvg(b,x0,x1,y){
+  if(b.support==="cantilever"){
+    const hatch=Array.from({length:7},(_,i)=>`<line x1="${x0-20}" y1="${y-42+i*14}" x2="${x0}" y2="${y-54+i*14}" stroke="var(--c-sub)" stroke-width="1.5"/>`).join("");
+    return `<rect x="${x0-8}" y="${y-48}" width="8" height="96" fill="var(--c-text)"/>${hatch}`;
+  }
+  return `${supportIcon("pin",x0,y)}${supportIcon("roller",x1,y)}`;
+}
+function supportIcon(type,x,y){
+  if(type==="fixed"){
+    const hatch=Array.from({length:7},(_,i)=>`<line x1="${x-20}" y1="${y-42+i*14}" x2="${x}" y2="${y-54+i*14}" stroke="var(--c-sub)" stroke-width="1.5"/>`).join("");
+    return `<rect x="${x-8}" y="${y-48}" width="8" height="96" fill="var(--c-text)"/>${hatch}`;
+  }
+  const tri=`<polygon points="${x-15},${y+34} ${x+15},${y+34} ${x},${y+10}" fill="var(--c-sub)"/>`;
+  const base=`<line x1="${x-24}" y1="${y+38}" x2="${x+24}" y2="${y+38}" stroke="var(--c-sub)" stroke-width="3"/>`;
+  if(type==="roller") return `<circle cx="${x-9}" cy="${y+31}" r="5" fill="var(--c-sub)"/><circle cx="${x+9}" cy="${y+31}" r="5" fill="var(--c-sub)"/>${tri}${base}`;
+  return `${tri}<line x1="${x-24}" y1="${y+35}" x2="${x+24}" y2="${y+35}" stroke="var(--c-sub)" stroke-width="3"/>`;
+}
+function arrowDown(x,y1,y2,label,color="#dc2626"){
+  return `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
+    <polygon points="${x-8},${y2} ${x+8},${y2} ${x},${y2+14}" fill="${color}"/>
+    ${label?`<text x="${x+10}" y="${y1+12}" fill="${color}" font-size="13" font-weight="700">${esc(label)}</text>`:""}`;
+}
+function arrowUp(x,y1,y2,label,color="#16a34a"){
+  return `<line x1="${x}" y1="${y1}" x2="${x}" y2="${y2}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+    <polygon points="${x-7},${y2} ${x+7},${y2} ${x},${y2-12}" fill="${color}"/>
+    ${label?`<text x="${x+10}" y="${Math.min(y1,y2)+8}" fill="${color}" font-size="12" font-weight="700">${esc(label)}</text>`:""}`;
+}
+function momentMark(x,y,M,label,color="#dc2626"){
+  const s=M>=0?1:-1, glyph=M>=0?"↻":"↺";
+  return `<text x="${x}" y="${y-30}" text-anchor="middle" fill="${color}" font-size="28" font-weight="700">${glyph}</text>
+    <text x="${x+18*s}" y="${y-43}" fill="${color}" font-size="12" font-weight="700">${esc(label)}</text>`;
+}
+function beamSvg(sid,c){
+  if(c.b.mode==="free") return beamFreeSvg(sid,c);
+  const b=c.b, x0=70, x1=710, y=82, bw=x1-x0, x=v=>x0+bw*v/b.L;
+  const load = b.load==="point"
+    ? arrowDown(x(b.a),22,y-18,`${beamValLabel(b.PLabel,b.P,"kN")}`)
+    : Array.from({length:9},(_,i)=>{
+        const xx=x0+bw*(i+.5)/9;
+        return arrowDown(xx,28,y-18,i===0?`${beamValLabel(b.wLabel,b.w,"kN/m")}`:"");
+      }).join("");
+  const reactions = b.support==="simple"
+    ? `${arrowUp(x0,y+56,y+16,`RA=${fmt(c.RA,1)}`)}${arrowUp(x1,y+56,y+16,`RB=${fmt(c.RB,1)}`)}`
+    : `${arrowUp(x0+22,y+62,y+18,`RA=${fmt(c.RA,1)}`)}${momentMark(x0+10,y+94,c.MA,`MA=${fmt(c.MA,1)}`,"#16a34a")}`;
+  const pos = b.load==="point" ? `<line x1="${x0}" y1="156" x2="${x(b.a)}" y2="156" stroke="var(--c-sub)" stroke-width="1.5"/><line x1="${x(b.a)}" y1="156" x2="${x1}" y2="156" stroke="var(--c-line)" stroke-width="1.5"/>
+    <text x="${(x0+x(b.a))/2}" y="174" text-anchor="middle" fill="var(--c-sub)" font-size="12">${beamValLabel(b.aLabel,b.a,"m")}</text>
+    <text x="${(x(b.a)+x1)/2}" y="174" text-anchor="middle" fill="var(--c-sub)" font-size="12">${b.support==="simple"?`b=${fmt(b.L-b.a,2)}m`:""}</text>` : "";
+  return `<svg class="beamsvg" viewBox="0 0 760 190" role="img" onclick="beamPick('${sid}',event)" title="梁上をクリックすると集中荷重の位置が変わります">
+    <rect x="0" y="0" width="760" height="190" fill="transparent"/>
+    ${load}
+    <line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="var(--c-text)" stroke-width="8" stroke-linecap="round"/>
+    ${beamSupportSvg(b,x0,x1,y)}
+    ${reactions}
+    <line x1="${x0}" y1="144" x2="${x1}" y2="144" stroke="var(--c-line)" stroke-width="1"/>
+    <line x1="${x0}" y1="138" x2="${x0}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
+    <line x1="${x1}" y1="138" x2="${x1}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
+    <text x="${(x0+x1)/2}" y="140" text-anchor="middle" fill="var(--c-sub)" font-size="12">${beamValLabel(b.LLabel,b.L,"m")}</text>
+    ${pos}
+  </svg>`;
+}
+function beamFreeSvg(sid,c){
+  const b=c.b, x0=70, x1=710, y=92, bw=x1-x0, x=v=>x0+bw*v/b.L;
+  const supports=b.items.filter(it=>it.type==="pin"||it.type==="roller"||it.type==="fixed").map(it=>supportIcon(it.type,x(it.x),y)).join("");
+  const loads=b.items.filter(it=>it.type==="force").map(it=>{
+    const xx=x(it.x), label=beamValLabel(it.PLabel,it.P,"kN");
+    return it.P>=0 ? arrowDown(xx,24,y-18,label) : arrowUp(xx,y-20,28,label,"#dc2626");
+  }).join("");
+  const moments=b.items.filter(it=>it.type==="moment").map(it=>momentMark(x(it.x),y,it.M,beamValLabel(it.MLabel,it.M,"kN m"))).join("");
+  const reactions=(c.reactions||[]).map(r=>{
+    const xx=x(r.x);
+    const ar = Number.isFinite(r.R) ? (r.R>=0?arrowUp(xx,y+62,y+18,`R=${fmt(r.R,1)}`):arrowDown(xx,y+16,y+52,`R=${fmt(r.R,1)}`,"#16a34a")) : "";
+    const mo = Number.isFinite(r.MA) ? momentMark(xx+22,y+90,r.MA,`MA=${fmt(r.MA,1)}`,"#16a34a") : "";
+    return ar+mo;
+  }).join("");
+  const marks=b.items.map(it=>`<line x1="${x(it.x)}" y1="142" x2="${x(it.x)}" y2="150" stroke="var(--c-line)" stroke-width="1"/><text x="${x(it.x)}" y="164" text-anchor="middle" fill="var(--c-sub)" font-size="10">${esc(beamXLabel(it))}</text>`).join("");
+  return `<svg class="beamsvg" viewBox="0 0 760 180" role="img" onclick="beamPick('${sid}',event)" title="ツールを選んで梁上をクリックすると部材を追加します">
+    <rect x="0" y="0" width="760" height="180" fill="transparent"/>
+    ${loads}${moments}
+    <line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="var(--c-text)" stroke-width="8" stroke-linecap="round"/>
+    ${supports}${reactions}
+    <line x1="${x0}" y1="144" x2="${x1}" y2="144" stroke="var(--c-line)" stroke-width="1"/>
+    <line x1="${x0}" y1="138" x2="${x0}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
+    <line x1="${x1}" y1="138" x2="${x1}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
+    <text x="${(x0+x1)/2}" y="140" text-anchor="middle" fill="var(--c-sub)" font-size="12">${beamValLabel(b.LLabel,b.L,"m")}</text>
+    ${marks}
+  </svg>`;
+}
+function diagramSvg(title,c,key,unit,color,downPositive=false){
+  const x0=50,x1=730,mid=92,amp=58,L=c.b.L;
+  const max=Math.max(1e-9, Math.max(...c.pts.map(p=>Math.abs(p[key]))));
+  const sx=x=>x0+(x1-x0)*x/L;
+  const sy=v=>downPositive ? mid+(v/max)*amp : mid-(v/max)*amp;
+  const pts=c.pts.map(p=>`${fmt(sx(p.x),2)},${fmt(sy(p[key]),2)}`).join(" ");
+  const area=`${x0},${mid} ${pts} ${x1},${mid}`;
+  return `<div class="svgpanel"><div class="diagram-title"><b>${esc(title)}</b><span class="mini">max ${fmt(max,3)} ${esc(unit)}</span></div>
+    <svg viewBox="0 0 760 176" role="img">
+      <line x1="${x0}" y1="${mid}" x2="${x1}" y2="${mid}" stroke="var(--c-line)" stroke-width="1.5"/>
+      <line x1="${x0}" y1="26" x2="${x0}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
+      <polygon points="${area}" fill="${color}" opacity=".16"/>
+      <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>
+      <text x="${x0}" y="166" fill="var(--c-sub)" font-size="12">0</text>
+      <text x="${x1}" y="166" text-anchor="end" fill="var(--c-sub)" font-size="12">${fmt(L,1)}m</text>
+    </svg></div>`;
+}
+function beamMetrics(c){
+  const b=c.b;
+  let react;
+  if(c.mode==="free"){
+    react = c.valid
+      ? (c.reactions||[]).map((r,i)=>`${BEAM_TOOLS[r.type]||"支点"} x=${fmt(r.x,2)}: R ${fmt(r.R,2)} kN${Number.isFinite(r.MA)?` / MA ${fmt(r.MA,2)} kN m`:""}`).join("<br>")
+      : `<span class="weak">計算不可</span>`;
+  }else{
+    react = b.support==="simple" ? `RA ${fmt(c.RA,2)} kN<br>RB ${fmt(c.RB,2)} kN` : `RA ${fmt(c.RA,2)} kN<br>MA ${fmt(c.MA,2)} kN m`;
+  }
+  return `<div class="metricgrid">
+    <div class="metric"><span class="mini">支点反力</span><b>${react}</b></div>
+    <div class="metric"><span class="mini">最大 |Q|</span><b>${fmt(c.maxV,2)} kN</b></div>
+    <div class="metric"><span class="mini">最大 |M|</span><b>${fmt(c.maxM,2)} kN m</b></div>
+    <div class="metric"><span class="mini">最大たわみ</span><b>${fmt(c.yMax*1000,2)} mm</b><span class="mini">x=${fmt(c.yAt.x,2)} m</span></div>
+  </div>${c.valid?"" : `<div class="warnbox">${esc(c.note)}</div>`}`;
+}
+function beamLab(sid){
+  if(!sid.startsWith("kozo")) return subject(sid);
+  const d=DATA[sid], b=beamState(sid), c=beamCalc(b);
+  app.innerHTML=`<div class="topbar"><button class="ghost" onclick="nav('s/${sid}')">←</button>
+    <div><b>構造図シミュレータ</b><div class="crumb">${esc(d.name)}</div></div><span class="spacer"></span><button onclick="nav('s/${sid}/sheet')">直前モード</button></div>
+    <div class="simgrid">
+      <section class="card simcontrols"><b>入力</b>${beamControls(sid)}</section>
+      <section class="card">
+        <div class="diagram-title"><b>荷重図・反力</b><span class="mini">${b.mode==="free"?"自由配置":`${b.support==="simple"?"単純ばり":"片持ちばり"} / ${b.load==="point"?"集中荷重":"等分布荷重"}`}</span></div>
+        <div class="svgpanel">${beamSvg(sid,c)}</div>
+        ${beamMetrics(c)}
+        <div class="beam-readout"><span class="tag">N図: 0</span><span class="tag">Q図: ${fmt(c.maxV,2)} kN</span><span class="tag">M図: ${fmt(c.maxM,2)} kN m</span></div>
+        <div class="beamnote">${b.mode==="free"?"自由配置は剛性法で不静定ばりまで計算します。力は下向き +、集中モーメントは時計回り + です。":"符号は下向き荷重で、片持ちばりの固定端側曲げを負側に描いています。"} たわみは入力した ${esc(b.EILabel||"EI")} による概算です。</div>
+      </section>
+    </div>
+    ${diagramSvg("N図(軸力)",c,"N","kN","var(--c-sub)")}
+    ${diagramSvg("Q図(せん断力)",c,"V","kN","#2563eb")}
+    ${diagramSvg("M図(曲げモーメント)",c,"M","kN m","#d97706")}
+    ${diagramSvg("たわみ概形",c,"Y","m","#16a34a",true)}`;
+}
+
+
+/* --- 用語ポップアップ --- */
+function bindGlossary(sid){
+  document.querySelectorAll(".gl").forEach(el=>{
+    el.onclick=()=>{
+      const d=DATA[el.dataset.subj||sid];
+      const g=(d.glossary||[]).find(x=>x.term===el.dataset.term);
+      showPopup(el.dataset.term, g? md(g.def,sid) : "(用語集に未登録)", g?.reading);
+    };
+  });
+}
+function showPopup(title,body,reading){
+  const p=document.createElement("div");
+  p.className="popup";
+  p.innerHTML=`<div class="inner"><h3>${esc(title)} ${reading?`<span class="mini">(${esc(reading)})</span>`:""}</h3><div>${body}</div>
+    <div class="rowbtns"><button class="primary">閉じる</button></div></div>`;
+  p.onclick=e=>{ if(e.target===p||e.target.tagName==="BUTTON") p.remove(); };
+  document.body.appendChild(p);
+}
+
+render();
+hydrateState();
+registerPWA();
+</script>
+</body>
+</html>
