@@ -1,0 +1,20 @@
+{
+  "name": "テスト勉強 2026前期",
+  "short_name": "Study 2026",
+  "description": "試験日、忘却曲線、弱点演習をまとめて管理する学習アプリ",
+  "id": "./index.html",
+  "start_url": "./index.html#home",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#102033",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
