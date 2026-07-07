@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Study 2026">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="apple-touch-icon" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <title>テスト勉強 2026前期</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
@@ -553,6 +553,30 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
   font-size:.82rem;
   line-height:1.55;
 }
+.sync-fields{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+.sync-fields input{
+  box-sizing:border-box;
+  width:100%;
+  border:1px solid var(--c-line);
+  border-radius:var(--radius);
+  padding:10px;
+  color:var(--c-text);
+  background:var(--c-bg);
+  font:inherit;
+}
+.sync-account{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  flex-wrap:wrap;
+  margin-top:10px;
+}
 .toast{
   position:fixed;
   left:50%;
@@ -572,6 +596,7 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
   .storage-grid{grid-template-columns:1fr}
   .storage-row{align-items:flex-start;flex-direction:column}
   .storage-actions button{width:100%}
+  .sync-fields{grid-template-columns:1fr}
 }
 
 </style>
@@ -589,6 +614,7 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
 <script src="subjects/suiri3.js"></script>
 <script src="subjects/oyosugaku1.js"></script>
 <script src="subjects/keikaku2.js"></script>
+<script src="./sync.config.js"></script>
 
 <script>
 "use strict";
@@ -604,9 +630,18 @@ const DB_VERSION = 1;
 const DB_STORE = "kv";
 const DB_STATE_KEY = "state";
 const APP_VERSION = "2026.07.07-hosted";
+const SYNC_CONFIG = window.STUDY_SYNC_CONFIG || {};
 let dbPromise = null;
 let saveTimer = 0;
 let storageStatus = {ready:false, idb:false, persisted:false, mode:"localStorage", lastSaved:"", error:"", sw:"未確認"};
+let syncStatus = {configured:false, ready:false, signedIn:false, email:"", uid:"", mode:"未設定", lastPulled:"", lastPushed:"", remoteUpdatedAt:"", error:""};
+let syncFb = null;
+let syncAuth = null;
+let syncDb = null;
+let syncUnsub = null;
+let syncInitPromise = null;
+let syncSaveTimer = 0;
+let syncPause = false;
 
 function nowIso(){ return new Date().toISOString(); }
 function parseJSONSafe(raw){ try{ return raw ? JSON.parse(raw) : {}; }catch(e){ return {}; } }
@@ -628,9 +663,9 @@ function meta(){ return ensureMeta(); }
 function stateUpdatedAt(o){ return Date.parse(o?._meta?.updatedAt || "") || 0; }
 function cloneState(){ return JSON.parse(JSON.stringify(S)); }
 function stateBytes(o=S){ try{ return new Blob([JSON.stringify(o)]).size; }catch(e){ return JSON.stringify(o).length; } }
-function save(){
+function save(options={}){
   const m = meta();
-  m.updatedAt = nowIso();
+  if(!options.keepUpdatedAt) m.updatedAt = nowIso();
   m.saveCount = Number(m.saveCount||0) + 1;
   storageStatus.lastSaved = m.updatedAt;
   try{
@@ -640,6 +675,7 @@ function save(){
     storageStatus.error = "localStorage保存失敗: " + (e?.message || e);
   }
   queueIdbSave();
+  if(!options.skipCloud) queueCloudSave();
 }
 function openDb(){
   if(typeof indexedDB === "undefined") return Promise.reject(new Error("IndexedDB非対応"));
@@ -1045,12 +1081,262 @@ async function requestPersistentStorage(){
     render();
   }
 }
+function firebaseConfig(){
+  return SYNC_CONFIG.firebase || {};
+}
+function hasFirebaseConfig(){
+  const c = firebaseConfig();
+  return !!(c.apiKey && c.projectId && c.appId);
+}
+function syncRender(){
+  const h = location.hash.slice(1);
+  if(h === "storage") render();
+}
+function syncModeClass(){
+  if(!hasFirebaseConfig()) return "warn";
+  if(syncStatus.error) return "ng";
+  if(syncStatus.signedIn) return "ok";
+  return "warn";
+}
+async function loadFirebase(){
+  if(syncFb) return syncFb;
+  const v = SYNC_CONFIG.firebaseSdkVersion || "10.12.5";
+  const [appMod, authMod, fsMod] = await Promise.all([
+    import(`https://www.gstatic.com/firebasejs/${v}/firebase-app.js`),
+    import(`https://www.gstatic.com/firebasejs/${v}/firebase-auth.js`),
+    import(`https://www.gstatic.com/firebasejs/${v}/firebase-firestore.js`)
+  ]);
+  syncFb = Object.assign({}, appMod, authMod, fsMod);
+  return syncFb;
+}
+async function initCloudSync(){
+  syncStatus.configured = hasFirebaseConfig();
+  if(!syncStatus.configured){
+    syncStatus.ready = true;
+    syncStatus.mode = "未設定";
+    return;
+  }
+  if(syncInitPromise) return syncInitPromise;
+  syncStatus.mode = "初期化中";
+  syncInitPromise = (async()=>{
+    try{
+      const fb = await loadFirebase();
+      const appInstance = fb.getApps().length ? fb.getApp() : fb.initializeApp(firebaseConfig());
+      syncAuth = fb.getAuth(appInstance);
+      syncDb = fb.getFirestore(appInstance);
+      await fb.getRedirectResult(syncAuth).catch(()=>null);
+      fb.onAuthStateChanged(syncAuth, user => {
+        syncStatus.ready = true;
+        syncStatus.error = "";
+        syncStatus.signedIn = !!user;
+        syncStatus.email = user?.email || "";
+        syncStatus.uid = user?.uid || "";
+        if(syncUnsub){ syncUnsub(); syncUnsub = null; }
+        if(user) attachCloudState(user);
+        else syncStatus.mode = "未ログイン";
+        syncRender();
+      });
+    }catch(e){
+      syncStatus.ready = true;
+      syncStatus.error = e?.message || String(e);
+      syncStatus.mode = "同期初期化失敗";
+      syncRender();
+    }
+  })();
+  return syncInitPromise;
+}
+function cloudStateRef(uid){
+  return syncFb.doc(syncDb, "users", uid, "state", "main");
+}
+function attachCloudState(user){
+  if(!syncDb || !syncFb) return;
+  syncStatus.mode = "接続中";
+  const ref = cloudStateRef(user.uid);
+  syncUnsub = syncFb.onSnapshot(ref, snap => {
+    syncStatus.error = "";
+    if(!snap.exists()){
+      syncStatus.mode = "初回同期待ち";
+      queueCloudSave(true);
+      syncRender();
+      return;
+    }
+    const remote = snap.data() || {};
+    const remoteState = remote.state;
+    const remoteMs = stateUpdatedAt(remoteState);
+    const localMs = stateUpdatedAt(S);
+    syncStatus.remoteUpdatedAt = remote.localUpdatedAt || remoteState?._meta?.updatedAt || "";
+    syncStatus.lastPulled = nowIso();
+    if(remoteState && remoteMs > localMs){
+      syncPause = true;
+      S = remoteState;
+      meta().syncedAt = nowIso();
+      save({keepUpdatedAt:true, skipCloud:true});
+      syncPause = false;
+      syncStatus.mode = "同期済み";
+      toast("クラウドから同期しました");
+      render();
+      return;
+    }
+    if(localMs > remoteMs) queueCloudSave(true);
+    syncStatus.mode = "同期済み";
+    syncRender();
+  }, err => {
+    syncStatus.error = err?.message || String(err);
+    syncStatus.mode = "同期エラー";
+    syncRender();
+  });
+}
+function queueCloudSave(force=false){
+  if(syncPause || !syncAuth?.currentUser || !syncDb || !syncFb) return;
+  clearTimeout(syncSaveTimer);
+  const snapshot = cloneState();
+  syncSaveTimer = setTimeout(()=>pushCloudState(snapshot), force ? 20 : 900);
+}
+async function pushCloudState(snapshot=cloneState()){
+  if(!syncAuth?.currentUser) throw new Error("ログインしていません");
+  const uid = syncAuth.currentUser.uid;
+  syncStatus.mode = "アップロード中";
+  syncRender();
+  await syncFb.setDoc(cloudStateRef(uid), {
+    app:"studyapp-2026",
+    appVersion:APP_VERSION,
+    state:snapshot,
+    localUpdatedAt:snapshot?._meta?.updatedAt || nowIso(),
+    updatedAt:syncFb.serverTimestamp()
+  }, {merge:true});
+  syncStatus.lastPushed = nowIso();
+  syncStatus.mode = "同期済み";
+  syncStatus.error = "";
+  syncRender();
+}
+async function pullCloudState(){
+  try{
+    await initCloudSync();
+    if(!syncAuth?.currentUser) throw new Error("ログインしていません");
+    const snap = await syncFb.getDoc(cloudStateRef(syncAuth.currentUser.uid));
+    if(!snap.exists()) throw new Error("クラウドに保存データがありません");
+    const remoteState = snap.data()?.state;
+    if(!remoteState) throw new Error("クラウドデータを読めません");
+    const ok = stateUpdatedAt(remoteState) >= stateUpdatedAt(S) || confirm("クラウド側のデータがこの端末より古い可能性があります。取り込みますか？");
+    if(!ok) return;
+    syncPause = true;
+    S = remoteState;
+    meta().syncedAt = nowIso();
+    save({keepUpdatedAt:true, skipCloud:true});
+    syncPause = false;
+    syncStatus.lastPulled = nowIso();
+    syncStatus.mode = "同期済み";
+    render();
+    toast("クラウドから取り込みました");
+  }catch(e){
+    syncStatus.error = e?.message || String(e);
+    syncStatus.mode = "同期エラー";
+    render();
+  }
+}
+async function pushCloudStateNow(){
+  try{
+    await initCloudSync();
+    if(!syncAuth?.currentUser) throw new Error("ログインしていません");
+    save();
+    await pushCloudState(cloneState());
+    toast("クラウドへ保存しました");
+  }catch(e){
+    syncStatus.error = e?.message || String(e);
+    syncStatus.mode = "同期エラー";
+    render();
+  }
+}
+async function signInWithGoogle(){
+  try{
+    await initCloudSync();
+    const provider = new syncFb.GoogleAuthProvider();
+    provider.setCustomParameters({prompt:"select_account"});
+    try{
+      await syncFb.signInWithPopup(syncAuth, provider);
+    }catch(e){
+      if(["auth/popup-closed-by-user","auth/cancelled-popup-request"].includes(e?.code)) return;
+      if(["auth/popup-blocked","auth/operation-not-supported-in-this-environment"].includes(e?.code)){
+        await syncFb.signInWithRedirect(syncAuth, provider);
+        return;
+      }
+      throw e;
+    }
+  }catch(e){
+    syncStatus.error = e?.message || String(e);
+    syncStatus.mode = "ログイン失敗";
+    render();
+  }
+}
+async function signInWithEmail(create=false){
+  try{
+    await initCloudSync();
+    const email = document.getElementById("sync-email")?.value.trim();
+    const pass = document.getElementById("sync-password")?.value || "";
+    if(!email || !pass) throw new Error("メールアドレスとパスワードを入力してください");
+    if(create) await syncFb.createUserWithEmailAndPassword(syncAuth, email, pass);
+    else await syncFb.signInWithEmailAndPassword(syncAuth, email, pass);
+  }catch(e){
+    syncStatus.error = e?.message || String(e);
+    syncStatus.mode = create ? "新規作成失敗" : "ログイン失敗";
+    render();
+  }
+}
+async function signOutCloud(){
+  try{
+    if(syncAuth) await syncFb.signOut(syncAuth);
+    syncStatus.mode = "未ログイン";
+    syncStatus.signedIn = false;
+    syncStatus.email = "";
+    syncStatus.uid = "";
+    render();
+  }catch(e){
+    syncStatus.error = e?.message || String(e);
+    render();
+  }
+}
+function cloudSyncView(){
+  const configured = hasFirebaseConfig();
+  const signed = syncStatus.signedIn;
+  const mode = configured ? (syncStatus.mode || (signed ? "同期中" : "未ログイン")) : "Firebase未設定";
+  const pill = `<span class="storage-pill ${syncModeClass()}">${esc(mode)}</span>`;
+  if(!configured){
+    return `<section class="card">
+      <div class="panel-title"><b>クラウド同期</b>${pill}</div>
+      <p class="mini">Firebase設定を入れると、Macとスマホで同じ学習履歴を自動同期できます。</p>
+      <div class="diffbox">この公開版にはまだ同期先の設定が入っていません。Firebaseプロジェクト作成後に有効化します。</div>
+    </section>`;
+  }
+  return `<section class="card">
+    <div class="panel-title"><b>クラウド同期</b>${pill}</div>
+    <div class="storage-list">
+      <div class="storage-row"><div><b>アカウント</b><div class="mini">${signed?esc(syncStatus.email||syncStatus.uid):"ログインすると端末間で同期します"}</div></div><span class="storage-pill ${signed?"ok":"warn"}">${signed?"ログイン中":"未ログイン"}</span></div>
+      <div class="storage-row"><div><b>最終アップロード</b><div class="mini">${esc(savedLabel(syncStatus.lastPushed))}</div></div><span class="storage-pill ok">cloud</span></div>
+      <div class="storage-row"><div><b>最終取り込み</b><div class="mini">${esc(savedLabel(syncStatus.lastPulled))}</div></div><span class="storage-pill ok">pull</span></div>
+    </div>
+    ${syncStatus.error?`<div class="warnbox">${esc(syncStatus.error)}</div>`:""}
+    ${signed?`<div class="sync-account"><span class="mini">保存すると自動でクラウドにも反映されます。</span><button onclick="signOutCloud()">ログアウト</button></div>
+      <div class="storage-actions">
+        <button class="primary" onclick="pushCloudStateNow()">今すぐクラウド保存</button>
+        <button onclick="pullCloudState()">クラウドから取り込む</button>
+      </div>`:
+      `<div class="sync-fields">
+        <input id="sync-email" type="email" inputmode="email" autocomplete="email" placeholder="メールアドレス">
+        <input id="sync-password" type="password" autocomplete="current-password" placeholder="パスワード">
+      </div>
+      <div class="storage-actions">
+        <button class="primary" onclick="signInWithEmail(false)">メールでログイン</button>
+        <button onclick="signInWithEmail(true)">新規作成</button>
+      </div>`}
+  </section>`;
+}
 function storageView(){
   const stats=stateStats();
   const canPwa = typeof navigator !== "undefined" && "serviceWorker" in navigator && location.protocol !== "file:";
   const fileMode = location.protocol === "file:";
   const persistClass = storageStatus.persisted ? "ok" : "warn";
   const idbClass = storageStatus.idb ? "ok" : "warn";
+  const syncClass = syncModeClass();
   app.innerHTML = `<div class="topbar appbar"><button class="ghost" onclick="nav('home')">←</button><h1>保存・引き継ぎ</h1><span class="spacer"></span>
       <button onclick="downloadBackup()">書き出し</button></div>
     <div class="storage-grid">
@@ -1061,10 +1347,12 @@ function storageView(){
           <div class="storage-kpi"><b>${esc(fmtBytes(stats.bytes))}</b><span class="mini">データ量</span></div>
           <div class="storage-kpi"><b>${stats.reviews}</b><span class="mini">復習登録</span></div>
           <div class="storage-kpi"><b>${stats.mistakes}</b><span class="mini">間違いノート</span></div>
+          <div class="storage-kpi"><b>${esc(syncStatus.signedIn?"ON":"OFF")}</b><span class="mini">クラウド同期</span></div>
         </div>
         <div class="storage-list">
           <div class="storage-row"><div><b>ブラウザ内保存</b><div class="mini">localStorage と IndexedDB に二重保存</div></div><span class="storage-pill ${idbClass}">${storageStatus.idb?"有効":"待機中"}</span></div>
           <div class="storage-row"><div><b>保存領域の保護</b><div class="mini">ブラウザが自動削除しにくい領域を要求</div></div><span class="storage-pill ${persistClass}">${storageStatus.persisted?"保護済み":"通常"}</span></div>
+          <div class="storage-row"><div><b>クラウド同期</b><div class="mini">ログインした同じアカウントでMac・スマホを同期</div></div><span class="storage-pill ${syncClass}">${esc(syncStatus.mode||"未確認")}</span></div>
           <div class="storage-row"><div><b>PWA</b><div class="mini">${fileMode?"file:// では登録不可":location.origin}</div></div><span class="storage-pill ${canPwa?"ok":"warn"}">${canPwa?"対応":"配信が必要"}</span></div>
         </div>
         ${storageStatus.error?`<div class="warnbox">${esc(storageStatus.error)}</div>`:""}
@@ -1075,6 +1363,7 @@ function storageView(){
           <button onclick="copyBackup()">JSONをコピー</button>
         </div>
       </section>
+      ${cloudSyncView()}
       <section class="card">
         <div class="panel-title"><b>スマホ引き継ぎ</b><span class="mini">code / share</span></div>
         <p class="mini">Mac側でコードを作り、スマホ側の同じ画面に貼り付けると学習履歴を引き継げます。</p>
@@ -2125,8 +2414,9 @@ function showPopup(title,body,reading){
 }
 
 render();
-hydrateState();
+hydrateState().then(()=>initCloudSync());
 registerPWA();
+window.addEventListener("online",()=>{ initCloudSync(); queueCloudSave(true); });
 </script>
 </body>
 </html>
