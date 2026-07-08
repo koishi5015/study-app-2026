@@ -110,6 +110,32 @@ textarea{width:100%;min-height:74px;resize:vertical;margin-top:8px}
 .diffbox,.hintbox{background:var(--c-bg);border:1px solid var(--c-line);border-radius:10px;padding:10px 12px;margin-top:8px;font-size:.88rem}
 .filterbar{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0}
 .filterbar button.on{background:var(--c-accent);color:#fff}
+.levelbar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:10px 0}
+.levelbar button{padding:7px 12px;font-size:.84rem}
+.levelbar button.on{background:var(--c-accent);color:#fff}
+.level-badge{display:inline-flex;align-items:center;gap:4px;font-size:.72rem;font-weight:800;border-radius:99px;padding:3px 9px}
+.level-badge.basic{background:var(--c-accent-soft);color:var(--c-accent)}
+.level-badge.standard{background:var(--c-fill2);color:#7c4a03}
+.level-badge.advanced{background:#fee2e2;color:#991b1b}
+.problem-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:flex-start}
+.problem-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.problem-note{display:grid;gap:6px;margin-top:8px}
+.problem-note .mini{background:var(--c-bg);border:1px solid var(--c-line);border-radius:8px;padding:7px 9px}
+.concept-grid{display:grid;gap:12px;margin-top:10px}
+.concept-card{border:1px solid var(--c-line);border-radius:14px;padding:14px;background:var(--c-card)}
+.concept-title{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap;margin-bottom:8px}
+.lab-layout{display:grid;grid-template-columns:minmax(220px,280px) 1fr;gap:12px;align-items:start}
+.lab-controls{display:grid;gap:8px}
+.lab-control span{display:flex;justify-content:space-between;gap:8px;font-size:.8rem;color:var(--c-sub);margin-bottom:3px}
+.lab-control input[type="range"]{width:100%;padding:0}
+.lab-output{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;margin-top:8px}
+.lab-output div{border:1px solid var(--c-line);border-radius:10px;background:var(--c-bg);padding:8px}
+.lab-output b{display:block;font-size:1.05rem}
+.lab-svg{border:1px solid var(--c-line);border-radius:12px;background:var(--c-bg);overflow:hidden}
+.lab-svg svg{display:block;width:100%;height:auto}
+.lab-equation{font-size:.86rem;background:var(--c-accent-soft);border-radius:10px;padding:9px 11px;margin-top:8px}
+@media (prefers-color-scheme: dark){.level-badge.advanced{background:#5f1e1e;color:#fca5a5}.level-badge.standard{background:#4a3a12;color:#fcd34d}}
+@media (max-width:760px){.lab-layout{grid-template-columns:1fr}.problem-head{flex-direction:column}}
 
 .simgrid{display:grid;grid-template-columns:minmax(230px,300px) 1fr;gap:12px;align-items:start}
 .simcontrols{position:sticky;top:52px}
@@ -614,6 +640,7 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
 <script src="subjects/suiri3.js"></script>
 <script src="subjects/oyosugaku1.js"></script>
 <script src="subjects/keikaku2.js"></script>
+<script src="subjects/challenge-pack.js"></script>
 <script src="./sync.config.js"></script>
 
 <script>
@@ -856,7 +883,34 @@ function fstage(subj,u,f){
   if(s.fsolve[k]) return 3; if(s.fsel[k]) return 2; if(s.fmem[k]) return 1; return 0;
 }
 const STAGE_LABEL=["未着手","覚えた","選べる","解ける"];
+const LEVEL_INFO={
+  basic:{label:"基礎", cls:"basic", score:0, note:"公式を1つ選んで代入する"},
+  standard:{label:"標準", cls:"standard", score:1, note:"条件整理と複数ステップ"},
+  advanced:{label:"発展", cls:"advanced", score:2, note:"試験本番に近い総合問題"}
+};
+const LEVEL_FILTERS=[["all","全部"],["basic","基礎"],["standard","標準"],["advanced","発展"]];
 function formulaById(u,id){ return (u.formulas||[]).find(f=>f.id===id); }
+function problemLevel(p){
+  const v=String(p?.level||p?.difficulty||"standard").toLowerCase();
+  return LEVEL_INFO[v] ? v : "standard";
+}
+function levelBadge(level){
+  const info=LEVEL_INFO[level]||LEVEL_INFO.standard;
+  return `<span class="level-badge ${info.cls}">${esc(info.label)}</span>`;
+}
+function levelText(level){ return (LEVEL_INFO[level]||LEVEL_INFO.standard).label; }
+function levelScore(level){ return (LEVEL_INFO[level]||LEVEL_INFO.standard).score; }
+function solveFilter(sid,uid){
+  const m=meta();
+  m.solveFilters=m.solveFilters||{};
+  return m.solveFilters[`${sid}:${uid}`] || "all";
+}
+function setSolveFilter(sid,uid,v){
+  const m=meta();
+  m.solveFilters=m.solveFilters||{};
+  m.solveFilters[`${sid}:${uid}`]=LEVEL_INFO[v] ? v : "all";
+  save(); render();
+}
 function buildTasks(sid, limit){
   const d=DATA[sid]; if(!d) return [];
   const s=st(sid); const tasks=[];
@@ -882,7 +936,8 @@ function buildTasks(sid, limit){
       if(s.selq[u.id+":"+i]!==1) tasks.push({kind:"公式選択", title:q.q, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/select`, score:base+34, sid});
     });
     (u.problems||[]).forEach(p=>{
-      if(s.prob[u.id+":"+p.id]!=="ok") tasks.push({kind:"計算演習", title:p.pattern, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/solve`, score:base+45, sid});
+      const lv=problemLevel(p);
+      if(s.prob[u.id+":"+p.id]!=="ok") tasks.push({kind:levelScore(lv)>=2?"発展演習":"計算演習", title:p.pattern, sub:`${d.name} / ${u.title} / ${levelText(lv)}`, href:`s/${sid}/u/${u.id}/solve`, score:base+45+levelScore(lv)*10, sid});
     });
     (u.quiz||[]).forEach((q,i)=>{
       if(s.quiz[u.id+":"+i]!==1) tasks.push({kind:"理解クイズ", title:q.q, sub:`${d.name} / ${u.title}`, href:`s/${sid}/u/${u.id}/quiz`, score:base+22, sid});
@@ -1533,16 +1588,19 @@ function subject(id){
     <div class="section-title"><b>単元</b><span class="mini">頻出度と進捗で確認</span></div>
     <div class="unit-grid">${units}</div>`;
 }
-const TABS=[["learn","解説"],["formula","公式"],["select","公式選択"],["solve","計算演習"],["quiz","クイズ"]];
+const TABS=[["learn","解説"],["concept","概念図"],["formula","公式"],["select","公式選択"],["solve","計算演習"],["quiz","クイズ"]];
 function unit(sid, uid, tab){
   const d=DATA[sid]; const u=d.units.find(x=>x.id===uid); if(!u) return subject(sid);
-  const tabs = TABS.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="nav('s/${sid}/u/${uid}/${k}')">${l}</button>`).join("");
+  const availableTabs = TABS.filter(([k])=>k!=="concept" || (u.concepts||[]).length);
+  const tabs = availableTabs.map(([k,l])=>`<button class="${k===tab?'on':''}" onclick="nav('s/${sid}/u/${uid}/${k}')">${l}</button>`).join("");
   let body="";
   if(tab==="learn") body=vLearn(sid,u);
+  if(tab==="concept") body=vConcept(sid,u);
   if(tab==="formula") body=vFormula(sid,u);
   if(tab==="select") body=vSelect(sid,u);
   if(tab==="solve") body=vSolve(sid,u);
   if(tab==="quiz") body=vQuiz(sid,u);
+  if(!body && tab==="concept") body=vLearn(sid,u);
   app.innerHTML = `<div class="topbar appbar"><button class="ghost" onclick="nav('s/${sid}')">←</button>
     <div><b>${esc(u.title)}</b><div class="crumb">${esc(d.name)} ${esc(u.weeks||"")}</div></div></div>
     <section class="unit-banner" style="${subjectStyle(sid)}">
@@ -1573,6 +1631,143 @@ function markRead(sid,uid,i){
   s.read[k]=1;
   reviewItem(sid,reviewKey("read",uid,i),"解説復習",sec?.heading||"解説",`s/${sid}/u/${uid}/learn`,true);
   save(); render();
+}
+
+/* --- 概念図 --- */
+function conceptState(sid,uid,cid,defaults={}){
+  const m=meta();
+  m.concepts=m.concepts||{};
+  const key=`${sid}:${uid}:${cid}`;
+  if(!m.concepts[key]) m.concepts[key]=Object.assign({},defaults);
+  return m.concepts[key];
+}
+function conceptSet(sid,uid,cid,k,v){
+  const d=DATA[sid], u=d?.units?.find(x=>x.id===uid), c=(u?.concepts||[]).find(x=>x.id===cid);
+  const defaults=Object.fromEntries((c?.controls||[]).map(ctrl=>[ctrl.key, ctrl.value]));
+  const s=conceptState(sid,uid,cid,defaults);
+  s[k]=Number(v);
+  save(); render();
+}
+function conceptSvg(c,state){
+  if(c.type==="hydroPressure") return hydroPressureLab(c,state);
+  if(c.type==="beamMoment") return beamMomentConceptLab(c,state);
+  if(c.type==="odeRoots") return odeRootsLab(c,state);
+  if(c.type==="slopeStability") return slopeStabilityLab(c,state);
+  if(c.type==="mohrCircle") return mohrCircleLab(c,state);
+  if(c.svg) return `<div class="lab-svg">${c.svg}</div>`;
+  return `<div class="empty">この概念図は準備中です</div>`;
+}
+function vConcept(sid,u){
+  const concepts=u.concepts||[];
+  if(!concepts.length) return '<div class="empty">この単元には概念図がまだありません</div>';
+  return `<div class="concept-grid">${concepts.map(c=>{
+    const defaults=Object.fromEntries((c.controls||[]).map(ctrl=>[ctrl.key, ctrl.value]));
+    const state=conceptState(sid,u.id,c.id,defaults);
+    const controls=(c.controls||[]).map(ctrl=>{
+      const value=Number.isFinite(Number(state[ctrl.key])) ? Number(state[ctrl.key]) : Number(ctrl.value||0);
+      return `<label class="lab-control"><span><b>${esc(ctrl.label)}</b><em>${fmt(value,ctrl.digits??2)}${esc(ctrl.unit||"")}</em></span>
+        <input type="range" min="${esc(ctrl.min)}" max="${esc(ctrl.max)}" step="${esc(ctrl.step||1)}" value="${esc(value)}" oninput="conceptSet('${sid}','${u.id}','${c.id}','${ctrl.key}',this.value)">
+      </label>`;
+    }).join("");
+    return `<section class="concept-card">
+      <div class="concept-title"><div><span class="tag">${esc(c.kind||"概念")}</span><h3>${esc(c.title)}</h3></div>${c.level?levelBadge(c.level):""}</div>
+      <p class="mini">${esc(c.description||"")}</p>
+      <div class="lab-layout">
+        <div class="lab-controls">${controls||'<div class="empty">操作項目なし</div>'}<div class="lab-equation">${md(c.equation||"",sid)}</div></div>
+        <div>${conceptSvg(c,state)}</div>
+      </div>
+    </section>`;
+  }).join("")}</div>`;
+}
+function hydroPressureLab(c,s){
+  const H=Math.max(0.2,Number(s.H||4)), gamma=Math.max(1,Number(s.gamma||9.8)), b=Math.max(0.2,Number(s.b||2));
+  const P=0.5*gamma*H*H*b, ycp=2*H/3, hG=H/2;
+  const x0=78,y0=32,h=238,w=170, scale=h/H, tri=`${x0+w},${y0} ${x0+w},${y0+h} ${x0+w+115},${y0+h}`;
+  return `<div class="lab-svg"><svg viewBox="0 0 560 330" role="img">
+    <rect x="32" y="${y0}" width="${x0-32}" height="${h}" fill="#bfdbfe" opacity=".45"/>
+    <line x1="32" y1="${y0}" x2="${x0+w+150}" y2="${y0}" stroke="var(--c-accent)" stroke-width="2"/>
+    <rect x="${x0+w}" y="${y0}" width="12" height="${h}" fill="var(--c-text)"/>
+    <polygon points="${tri}" fill="#2563eb" opacity=".18" stroke="#2563eb" stroke-width="2"/>
+    <line x1="${x0+w}" y1="${y0+h-hG*scale}" x2="${x0+w+78}" y2="${y0+h-hG*scale}" stroke="#16a34a" stroke-dasharray="5 4" stroke-width="2"/>
+    <text x="${x0+w+86}" y="${y0+h-hG*scale+4}" fill="#16a34a" font-size="13">図心 hG=${fmt(hG,2)}m</text>
+    <line x1="${x0+w}" y1="${y0+h-ycp*scale}" x2="${x0+w+112}" y2="${y0+h-ycp*scale}" stroke="#dc2626" stroke-width="3"/>
+    <polygon points="${x0+w+124},${y0+h-ycp*scale} ${x0+w+110},${y0+h-ycp*scale-7} ${x0+w+110},${y0+h-ycp*scale+7}" fill="#dc2626"/>
+    <text x="${x0+w+132}" y="${y0+h-ycp*scale+4}" fill="#dc2626" font-size="13">作用点 ${fmt(ycp,2)}m</text>
+    <line x1="${x0-18}" y1="${y0}" x2="${x0-18}" y2="${y0+h}" stroke="var(--c-sub)" stroke-width="1.5"/>
+    <text x="${x0-26}" y="${y0+h/2}" text-anchor="end" fill="var(--c-sub)" font-size="13">H=${fmt(H,2)}m</text>
+    <text x="36" y="304" fill="var(--c-sub)" font-size="13">圧力は深さに比例するので三角形分布になる</text>
+  </svg></div>
+  <div class="lab-output"><div><span class="mini">全水圧 P</span><b>${fmt(P,2)} kN</b></div><div><span class="mini">図心深さ</span><b>${fmt(hG,2)} m</b></div><div><span class="mini">圧力中心</span><b>${fmt(ycp,2)} m</b></div></div>`;
+}
+function beamMomentConceptLab(c,s){
+  const L=Math.max(2,Number(s.L||6)), P=Number(s.P||20), a=clamp(Number(s.a||3),0.05,L-0.05), b=L-a;
+  const RA=P*b/L, RB=P*a/L, Mmax=RA*a;
+  const x0=52,x1=520,y=95,bw=x1-x0, x=v=>x0+bw*v/L, mid=218, amp=58;
+  const pts=Array.from({length:121},(_,i)=>{ const xx=L*i/120; const M=xx<=a?RA*xx:RA*xx-P*(xx-a); return `${x(xx)},${mid-(M/Math.max(Math.abs(Mmax),1e-9))*amp}`; }).join(" ");
+  return `<div class="lab-svg"><svg viewBox="0 0 560 320" role="img">
+    <line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="var(--c-text)" stroke-width="8" stroke-linecap="round"/>
+    ${supportIcon("pin",x0,y)}${supportIcon("roller",x1,y)}${arrowDown(x(a),28,y-18,`P=${fmt(P,1)}`)}
+    ${arrowUp(x0,y+58,y+18,`RA=${fmt(RA,1)}`,"#16a34a")}${arrowUp(x1,y+58,y+18,`RB=${fmt(RB,1)}`,"#16a34a")}
+    <line x1="${x0}" y1="${mid}" x2="${x1}" y2="${mid}" stroke="var(--c-line)" stroke-width="1.5"/>
+    <polyline points="${pts}" fill="none" stroke="#d97706" stroke-width="3"/>
+    <polygon points="${x0},${mid} ${pts} ${x1},${mid}" fill="#d97706" opacity=".14"/>
+    <text x="48" y="30" fill="var(--c-text)" font-size="14">荷重位置 a を動かすと反力比と最大Mが変わる</text>
+    <text x="${x(a)}" y="${mid-amp-8}" text-anchor="middle" fill="#d97706" font-size="13">Mmax=${fmt(Mmax,2)}</text>
+  </svg></div>
+  <div class="lab-output"><div><span class="mini">左反力 RA</span><b>${fmt(RA,2)} kN</b></div><div><span class="mini">右反力 RB</span><b>${fmt(RB,2)} kN</b></div><div><span class="mini">最大M</span><b>${fmt(Mmax,2)} kN m</b></div></div>`;
+}
+function odeRootsLab(c,s){
+  const p=Number(s.p||2), q=Number(s.q||1), D=p*p-4*q;
+  let label, solution;
+  if(D>0.02){ const r1=(-p+Math.sqrt(D))/2, r2=(-p-Math.sqrt(D))/2; label="異なる実根"; solution=`C1e^{${fmt(r1,2)}t}+C2e^{${fmt(r2,2)}t}`; }
+  else if(D<-0.02){ const a=-p/2, b=Math.sqrt(-D)/2; label="複素根"; solution=`e^{${fmt(a,2)}t}(C1\\\\cos ${fmt(b,2)}t+C2\\\\sin ${fmt(b,2)}t)`; }
+  else { const r=-p/2; label="重根"; solution=`(C1+C2t)e^{${fmt(r,2)}t}`; }
+  const cx=280, cy=158, sx=52, sy=52;
+  const pts=Array.from({length:101},(_,i)=>{ const x=(i-50)/10, y=x*x+p*x+q; return `${50+i*4.6},${cy-y*10}`; }).join(" ");
+  const roots=D>=0 ? [(-p+Math.sqrt(Math.max(0,D)))/2,(-p-Math.sqrt(Math.max(0,D)))/2] : [];
+  return `<div class="lab-svg"><svg viewBox="0 0 560 320" role="img">
+    <line x1="40" y1="${cy}" x2="522" y2="${cy}" stroke="var(--c-line)" stroke-width="1.5"/>
+    <line x1="${cx}" y1="34" x2="${cx}" y2="286" stroke="var(--c-line)" stroke-width="1.5"/>
+    <polyline points="${pts}" fill="none" stroke="#2563eb" stroke-width="3"/>
+    ${roots.map(r=>`<circle cx="${50+(r+5)*46}" cy="${cy}" r="6" fill="#dc2626"/><text x="${50+(r+5)*46}" y="${cy+22}" text-anchor="middle" fill="#dc2626" font-size="12">${fmt(r,2)}</text>`).join("")}
+    <text x="48" y="42" fill="var(--c-text)" font-size="14">特性方程式 r² + ${fmt(p,1)}r + ${fmt(q,1)} = 0</text>
+    <text x="48" y="68" fill="var(--c-sub)" font-size="13">判別式 D=p²-4q=${fmt(D,2)} → ${esc(label)}</text>
+  </svg></div>
+  <div class="lab-output"><div><span class="mini">根の型</span><b>${esc(label)}</b></div><div><span class="mini">判別式</span><b>${fmt(D,2)}</b></div></div>
+  <div class="lab-equation">解の形: $${solution}$</div>`;
+}
+function slopeStabilityLab(c,s){
+  const beta=Number(s.beta||30), phi=Number(s.phi||35), cval=Number(s.c||5), gamma=Number(s.gamma||18), z=Number(s.z||2), water=Number(s.water||0);
+  const rad=d=>d*Math.PI/180, gammaEff=gamma-(9.8*water), resisting=cval+gammaEff*z*Math.cos(rad(beta))**2*Math.tan(rad(phi)), driving=gamma*z*Math.sin(rad(beta))*Math.cos(rad(beta));
+  const F=resisting/(driving||1), ok=F>=1.2;
+  const x0=50,y0=250, len=410, a=rad(beta), x1=x0+len*Math.cos(a), y1=y0-len*Math.sin(a), zPix=52;
+  return `<div class="lab-svg"><svg viewBox="0 0 560 320" role="img">
+    <polygon points="${x0},${y0} ${x1},${y1} ${x1},${y0}" fill="#fef3c7" stroke="#d97706" stroke-width="2"/>
+    <line x1="${x0+40}" y1="${y0-zPix}" x2="${x1-24}" y2="${y1-zPix}" stroke="#dc2626" stroke-width="3" stroke-dasharray="8 5"/>
+    <line x1="${x0+70}" y1="${y0-4}" x2="${x0+112}" y2="${y0-4}" stroke="var(--c-sub)" stroke-width="1.5"/>
+    <path d="M ${x0+72} ${y0-3} A 46 46 0 0 0 ${x0+72+44*Math.cos(a)} ${y0-3-44*Math.sin(a)}" fill="none" stroke="var(--c-sub)" stroke-width="1.5"/>
+    <text x="${x0+118}" y="${y0-26}" fill="var(--c-sub)" font-size="13">β=${fmt(beta,1)}°</text>
+    <text x="${x0+130}" y="${y0-92}" fill="#dc2626" font-size="13">すべり面深さ z=${fmt(z,1)}m</text>
+    <text x="52" y="42" fill="var(--c-text)" font-size="14">抵抗 = c + γ' z cos²β tanφ / 滑動 = γ z sinβ cosβ</text>
+    <text x="52" y="66" fill="${ok?"#16a34a":"#dc2626"}" font-size="15" font-weight="700">安全率 F=${fmt(F,2)} ${ok?"安定側":"要注意"}</text>
+  </svg></div>
+  <div class="lab-output"><div><span class="mini">滑動力</span><b>${fmt(driving,2)}</b></div><div><span class="mini">抵抗力</span><b>${fmt(resisting,2)}</b></div><div><span class="mini">安全率</span><b>${fmt(F,2)}</b></div></div>`;
+}
+function mohrCircleLab(c,s){
+  const sx=Number(s.sigmaX||40), sy=Number(s.sigmaY||100), tau=Number(s.tau||25);
+  const center=(sx+sy)/2, rad=Math.sqrt(((sx-sy)/2)**2+tau*tau), s1=center+rad, s3=center-rad;
+  const xmin=Math.min(0,s3-20), xmax=s1+30, scale=430/(xmax-xmin), ox=70-xmin*scale, cy=160, r=rad*scale;
+  return `<div class="lab-svg"><svg viewBox="0 0 560 320" role="img">
+    <line x1="42" y1="${cy}" x2="520" y2="${cy}" stroke="var(--c-line)" stroke-width="1.5"/>
+    <line x1="${ox}" y1="34" x2="${ox}" y2="286" stroke="var(--c-line)" stroke-width="1.5"/>
+    <circle cx="${ox+center*scale}" cy="${cy}" r="${r}" fill="#2563eb" opacity=".1" stroke="#2563eb" stroke-width="3"/>
+    <circle cx="${ox+sx*scale}" cy="${cy-tau*scale}" r="5" fill="#dc2626"/><circle cx="${ox+sy*scale}" cy="${cy+tau*scale}" r="5" fill="#dc2626"/>
+    <line x1="${ox+sx*scale}" y1="${cy-tau*scale}" x2="${ox+sy*scale}" y2="${cy+tau*scale}" stroke="#dc2626" stroke-width="2"/>
+    <text x="48" y="42" fill="var(--c-text)" font-size="14">モール円: 中心 ${(fmt(center,1))}, 半径 ${fmt(rad,1)}</text>
+    <text x="${ox+s1*scale}" y="${cy+22}" text-anchor="middle" fill="#16a34a" font-size="13">σ1=${fmt(s1,1)}</text>
+    <text x="${ox+s3*scale}" y="${cy+22}" text-anchor="middle" fill="#16a34a" font-size="13">σ3=${fmt(s3,1)}</text>
+  </svg></div>
+  <div class="lab-output"><div><span class="mini">最大主応力 σ1</span><b>${fmt(s1,2)}</b></div><div><span class="mini">最小主応力 σ3</span><b>${fmt(s3,2)}</b></div><div><span class="mini">最大せん断</span><b>${fmt(rad,2)}</b></div></div>`;
 }
 
 /* --- 公式カード --- */
@@ -1675,7 +1870,17 @@ function formulaHintHTML(sid,u,refs){
   return `<div class="hintbox"><b>使う候補の公式</b>${fs.map(f=>`<div class="sheet-f"><b>${esc(f.name)}</b><div class="flatex" style="padding:4px">${tex(f.latex,true)}</div><div class="mini">${md(f.when||"",sid)}</div></div>`).join("")}</div>`;
 }
 function vSolve(sid,u){
-  return (u.problems||[]).map(p=>{
+  const filter=solveFilter(sid,u.id);
+  const problems=(u.problems||[]).slice().sort((a,b)=>levelScore(problemLevel(a))-levelScore(problemLevel(b)));
+  const filtered=filter==="all" ? problems : problems.filter(p=>problemLevel(p)===filter);
+  const counts=LEVEL_FILTERS.map(([k,l])=>{
+    const n=k==="all" ? problems.length : problems.filter(p=>problemLevel(p)===k).length;
+    return [k,`${l}${n?` ${n}`:""}`];
+  });
+  const intro=`<div class="levelbar"><span class="mini">難易度</span>${counts.map(([k,l])=>`<button class="${filter===k?'on':''}" onclick="setSolveFilter('${sid}','${u.id}','${k}')">${esc(l)}</button>`).join("")}</div>
+    <div class="hintbox"><b>段階演習</b><div class="mini">基礎で公式の入口を確認し、標準で条件整理、発展で図や複数条件を含む本番型に進みます。</div></div>`;
+  if(!filtered.length) return intro + '<div class="empty">この難易度の問題はまだありません</div>';
+  return intro + filtered.map(p=>{
     const variants=p.variants||[];
     if(!variants.length) return `<div class="card"><span class="tag">${esc(p.pattern||"計算演習")}</span><div class="empty">この演習には問題データがありません</div></div>`;
     const key=u.id+":"+p.id;
@@ -1684,11 +1889,17 @@ function vSolve(sid,u){
     const shown=variant.steps.slice(0,ps.step).map(stp=>`<div class="stepbox"><div class="slabel">${esc(stp.label)}</div><div>${md(stp.content,sid)}</div></div>`).join("");
     const doneAll=ps.step>=variant.steps.length;
     const status=st(sid).prob[key];
+    const lv=problemLevel(p);
     return `<div class="card">
-      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
-        <span class="tag">${esc(p.pattern)}</span>
+      <div class="problem-head">
+        <div class="problem-meta">${levelBadge(lv)}<span class="tag">${esc(p.pattern)}</span>${p.source?`<span class="tag">${esc(p.source)}</span>`:""}</div>
         <span class="mini">${status==="ok"?"習得":"未習得"} ｜ バリエーション ${ps.v%variants.length+1}/${variants.length}</span>
       </div>
+      ${(p.goal||p.trap||p.reading)?`<div class="problem-note">
+        ${p.goal?`<div class="mini"><b>狙い:</b> ${esc(p.goal)}</div>`:""}
+        ${p.reading?`<div class="mini"><b>図で見る点:</b> ${esc(p.reading)}</div>`:""}
+        ${p.trap?`<div class="mini"><b>ひっかけ:</b> ${esc(p.trap)}</div>`:""}
+      </div>`:""}
       <div class="qtext" style="margin-top:8px">${md(variant.q,sid)}</div>
       ${ps.step===0&&!doneAll?`<div class="hintbox"><b>まず自力で解く</b><div class="mini">紙か下のメモ欄で、式の選択、代入、単位確認までやってからヒントを開く。</div>
         <textarea placeholder="途中式メモ欄(保存はこの画面を開いている間だけ)" oninput="probScratch('${key}',this.value)">${esc(ps.scratch||"")}</textarea></div>`:""}
