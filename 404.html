@@ -2397,6 +2397,74 @@ function beamElementSample(EI,x1,x2,u,x){
   const d3=12/L/L/L*v1 + 6/L/L*t1 - 12/L/L/L*v2 + 6/L/L*t2;
   return {Y:-v, M:EI*d2, V:-EI*d3};
 }
+function beamDistLeftEffect(it,x){
+  const a=Math.min(it.x,it.x2), bb=Math.max(it.x,it.x2);
+  const end=Math.min(x,bb);
+  if(end<=a) return {V:0,M:0};
+  const h=end-a, centroid=a+h/2;
+  return {V:-it.w*h, M:-it.w*h*(x-centroid)};
+}
+function beamDistRightEffect(it,x){
+  const a=Math.min(it.x,it.x2), bb=Math.max(it.x,it.x2);
+  const start=Math.max(x,a);
+  if(start>=bb) return {V:0,M:0};
+  const h=bb-start, centroid=start+h/2;
+  return {V:-it.w*h, M:-it.w*h*(centroid-x)};
+}
+function beamFreeDiagramSide(b){
+  const supports=(b.items||[]).filter(it=>it.type==="pin"||it.type==="roller"||it.type==="fixed");
+  if(supports.length!==1 || supports[0].type!=="fixed") return "left";
+  if(supports[0].x<=0.001) return "right";
+  if(Math.abs(supports[0].x-b.L)<=0.001) return "left-free";
+  return "left";
+}
+function beamSectionFromLeft(b,reactions,x){
+  const tol=1e-7;
+  let V=0, M=0;
+  (reactions||[]).forEach(r=>{
+    if(r.x < x-tol){
+      if(Number.isFinite(r.R)){ V+=r.R; M+=r.R*(x-r.x); }
+      if(Number.isFinite(r.MA)) M+=r.MA;
+    }
+  });
+  (b.items||[]).forEach(it=>{
+    if(it.type==="force" && it.x < x-tol){ V-=it.P; M-=it.P*(x-it.x); }
+    if(it.type==="moment" && it.x < x-tol) M+=it.M;
+    if(it.type==="dist"){
+      const d=beamDistLeftEffect(it,x);
+      V+=d.V; M+=d.M;
+    }
+  });
+  return {N:0,V,M};
+}
+function beamSectionFromFreeEnd(b,x,side){
+  const tol=1e-7;
+  let V=0, M=0;
+  (b.items||[]).forEach(it=>{
+    if(it.type==="force"){
+      const include = side==="right" ? it.x > x+tol : it.x < x-tol;
+      if(include){
+        V-=it.P;
+        M-=it.P*Math.abs(it.x-x);
+      }
+    }
+    if(it.type==="moment"){
+      const include = side==="right" ? it.x > x+tol : it.x < x-tol;
+      if(include) M-=it.M;
+    }
+    if(it.type==="dist"){
+      const d = side==="right" ? beamDistRightEffect(it,x) : beamDistLeftEffect(it,x);
+      V+=d.V; M+=d.M;
+    }
+  });
+  return {N:0,V,M};
+}
+function beamSectionForces(b,reactions,x){
+  const side=beamFreeDiagramSide(b);
+  if(side==="right") return beamSectionFromFreeEnd(b,x,"right");
+  if(side==="left-free") return beamSectionFromFreeEnd(b,x,"left");
+  return beamSectionFromLeft(b,reactions,x);
+}
 function beamApplyFreeDeflection(b,pts,system,anchors){
   if(!pts.length){ return; }
   const sign=system==="fixed" ? -1 : 1;
@@ -2455,7 +2523,8 @@ function beamFreeCalc(b){
     let e=Math.max(0,nodes.findIndex((v,i)=>i<n-1 && x>=v-1e-7 && x<=nodes[i+1]+1e-7));
     if(e<0) e=n-2;
     const dof=[2*e,2*e+1,2*(e+1),2*(e+1)+1], sample=beamElementSample(EI,nodes[e],nodes[e+1],dof.map(i=>U[i]),x);
-    return {x,N:0,V:sample.V,M:sample.M,Y:sample.Y};
+    const section=beamSectionForces(b,reactions,x);
+    return {x,N:section.N,V:section.V,M:section.M,Y:sample.Y};
   });
   const maxAbs=k=>Math.max(0,...pts.map(p=>Math.abs(p[k])));
   const yAt=pts.reduce((best,p)=>Math.abs(p.Y)>Math.abs(best.Y)?p:best,pts[0]||{x:0,Y:0});
