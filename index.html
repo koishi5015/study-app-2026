@@ -145,7 +145,7 @@ textarea{width:100%;min-height:74px;resize:vertical;margin-top:8px}
 .ctrlrow input[type="range"]{padding:0}
 .ctrlrow em{font-style:normal;font-size:.78rem;color:var(--c-sub)}
 .selectrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.svgpanel{border:1px solid var(--c-line);border-radius:12px;padding:10px;background:var(--c-bg);margin-top:10px;overflow:hidden}
+.svgpanel{border:1px solid var(--c-line);border-radius:12px;padding:10px;background:var(--c-bg);margin-top:10px;overflow-x:auto;overflow-y:hidden}
 .svgpanel svg{width:100%;height:auto;display:block}
 .metricgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px;margin-top:10px}
 .metric{border:1px solid var(--c-line);border-radius:10px;padding:9px;background:var(--c-card)}
@@ -477,10 +477,15 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
 .daycard{margin:0}
 .simgrid{grid-template-columns:minmax(250px,320px) minmax(0,1fr);gap:14px}
 .simcontrols{top:70px}
+.diagram-card .svgpanel svg{min-width:520px}
 .beamtools button.on{background:var(--subject-accent,var(--c-accent))}
 @media (max-width:900px){
   .hero-panel,.dash-layout,.subject-hero{grid-template-columns:1fr}
   .hero-metrics{max-width:520px}
+}
+@media (max-width:760px){
+  .simgrid{grid-template-columns:1fr}
+  .simcontrols{position:static}
 }
 @media (max-width:640px){
   #app{padding:12px 12px 64px}
@@ -2107,7 +2112,7 @@ function mistakesView(sid){
 
 /* --- 構造図シミュレータ --- */
 const BEAM_DEFAULT = {mode:"template", support:"simple", load:"point", L:6, P:20, a:3, w:5, EI:20000, LLabel:"", PLabel:"", aLabel:"", wLabel:"", EILabel:"", tool:"force", items:[]};
-const BEAM_TOOLS = {pin:"ピン", roller:"ローラー", fixed:"固定端", force:"力", moment:"モーメント"};
+const BEAM_TOOLS = {pin:"ピン", roller:"ローラー", fixed:"固定端", force:"力", moment:"モーメント", dist:"分布荷重"};
 function num(v, fallback){ const n=Number(v); return Number.isFinite(n)?n:fallback; }
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 function fmt(n,d=2){
@@ -2121,6 +2126,12 @@ function beamItem(type,x,extra={}){
   const item={type, x, xLabel:beamCleanLabel(extra.xLabel||"")};
   if(type==="force"){ item.P=extra.P ?? 20; item.PLabel=beamCleanLabel(extra.PLabel||""); }
   if(type==="moment"){ item.M=extra.M ?? 20; item.MLabel=beamCleanLabel(extra.MLabel||""); }
+  if(type==="dist"){
+    item.x2=extra.x2 ?? (x+1.2);
+    item.x2Label=beamCleanLabel(extra.x2Label||"");
+    item.w=extra.w ?? 5;
+    item.wLabel=beamCleanLabel(extra.wLabel||"");
+  }
   return item;
 }
 function beamDefaultItems(b){
@@ -2157,10 +2168,20 @@ function beamNormalizeItem(it,b){
   const x=clamp(num(it.x,b.L/2),0,b.L), xLabel=beamCleanLabel(it.xLabel||"");
   if(type==="force") return {type,x,xLabel,P:clamp(num(it.P ?? it.value,20),-120,120),PLabel:beamCleanLabel(it.PLabel||"")};
   if(type==="moment") return {type,x,xLabel,M:clamp(num(it.M ?? it.value,20),-300,300),MLabel:beamCleanLabel(it.MLabel||"")};
+  if(type==="dist"){
+    let x2=clamp(num(it.x2 ?? it.to ?? x+Math.min(1.2,b.L/4), x+Math.min(1.2,b.L/4)),0,b.L);
+    if(Math.abs(x2-x)<0.05) x2=clamp(x+(x<=b.L-0.05?0.5:-0.5),0,b.L);
+    const a=Math.min(x,x2), bb=Math.max(x,x2);
+    let w=clamp(num(it.w ?? it.value,5),-50,50);
+    if(Math.abs(w)<0.001) w=5;
+    return {type,x:a,x2:bb,xLabel,x2Label:beamCleanLabel(it.x2Label||""),w,wLabel:beamCleanLabel(it.wLabel||"")};
+  }
   return {type,x,xLabel};
 }
 function beamValLabel(label,value,unit=""){ return label ? label : `${fmt(value,1)}${unit}`; }
 function beamXLabel(it){ return it.xLabel || fmt(it.x,1); }
+function beamX2Label(it){ return it.x2Label || fmt(it.x2,1); }
+function beamSpanLabel(it){ return `${beamXLabel(it)}-${beamX2Label(it)}`; }
 function beamLabelKey(k){ return ({L:"LLabel",P:"PLabel",a:"aLabel",w:"wLabel",EI:"EILabel"})[k] || ""; }
 function beamInputValue(b,k,value){
   const lk=beamLabelKey(k);
@@ -2183,6 +2204,11 @@ function beamSetItemSmart(sid,i,k,v){
     else if(Number.isFinite(n)){ it.x=n; it.xLabel=""; }
     else it.xLabel=beamCleanLabel(raw);
   }
+  if(k==="x2"){
+    if(raw==="") it.x2Label="";
+    else if(Number.isFinite(n)){ it.x2=n; it.x2Label=""; }
+    else it.x2Label=beamCleanLabel(raw);
+  }
   if(k==="P"){
     if(raw==="") it.PLabel="";
     else if(Number.isFinite(n)){ it.P=n; it.PLabel=""; }
@@ -2192,6 +2218,11 @@ function beamSetItemSmart(sid,i,k,v){
     if(raw==="") it.MLabel="";
     else if(Number.isFinite(n)){ it.M=n; it.MLabel=""; }
     else it.MLabel=beamCleanLabel(raw);
+  }
+  if(k==="w"){
+    if(raw==="") it.wLabel="";
+    else if(Number.isFinite(n)){ it.w=n; it.wLabel=""; }
+    else it.wLabel=beamCleanLabel(raw);
   }
   beamNormalize(b); save(); render();
 }
@@ -2214,17 +2245,24 @@ function beamSetItem(sid,i,k,v){
   const b=beamState(sid);
   const it=b.items[i]; if(!it) return;
   if(k==="x") it.x=Number(v);
+  if(k==="x2") it.x2=Number(v);
   if(k==="P") it.P=Number(v);
   if(k==="M") it.M=Number(v);
+  if(k==="w") it.w=Number(v);
   if(k==="xLabel") it.xLabel=beamCleanLabel(v);
+  if(k==="x2Label") it.x2Label=beamCleanLabel(v);
   if(k==="PLabel") it.PLabel=beamCleanLabel(v);
   if(k==="MLabel") it.MLabel=beamCleanLabel(v);
+  if(k==="wLabel") it.wLabel=beamCleanLabel(v);
   beamNormalize(b); save(); render();
 }
 function beamAddItem(sid,type,x){
   const b=beamState(sid);
   if(b.items.length>=14) return;
-  b.items.push(beamItem(type,clamp(num(x,b.L/2),0,b.L)));
+  const at=clamp(num(x,b.L/2),0,b.L);
+  const span=Math.min(1.2,b.L/4);
+  const extra=type==="dist" ? {x2:clamp(at+span,0,b.L),w:b.w||5} : {};
+  b.items.push(beamItem(type,at,extra));
   beamNormalize(b); save(); render();
 }
 function beamRemoveItem(sid,i){ const b=beamState(sid); b.items.splice(i,1); beamNormalize(b); save(); render(); }
@@ -2284,8 +2322,37 @@ function beamEventXs(b){
     xs.add(Number(clamp(it.x-e,0,b.L).toFixed(5)));
     xs.add(Number(it.x.toFixed(5)));
     xs.add(Number(clamp(it.x+e,0,b.L).toFixed(5)));
+    if(it.type==="dist"){
+      xs.add(Number(clamp(it.x2-e,0,b.L).toFixed(5)));
+      xs.add(Number(it.x2.toFixed(5)));
+      xs.add(Number(clamp(it.x2+e,0,b.L).toFixed(5)));
+    }
   });
   return Array.from(xs).sort((a,b)=>a-b);
+}
+function beamAnalysisNodes(b){
+  const xs=new Set([0,b.L]);
+  (b.items||[]).forEach(it=>{
+    xs.add(Number(clamp(it.x,0,b.L).toFixed(5)));
+    if(it.type==="dist"){
+      const a=clamp(it.x,0,b.L), bb=clamp(it.x2,0,b.L), len=Math.abs(bb-a);
+      const n=Math.max(2, Math.min(18, Math.ceil((len/Math.max(b.L,0.01))*24)));
+      for(let j=0;j<=n;j++) xs.add(Number((a+(bb-a)*j/n).toFixed(5)));
+    }
+  });
+  return Array.from(xs).sort((a,b)=>a-b);
+}
+function beamApplyDistLoad(F,nodes,it){
+  const a=Math.min(it.x,it.x2), bb=Math.max(it.x,it.x2), len=bb-a;
+  if(len<=1e-6) return;
+  const inside=nodes.filter(x=>x>=a-1e-7 && x<=bb+1e-7);
+  for(let i=0;i<inside.length-1;i++){
+    const x1=inside[i], x2=inside[i+1], dx=x2-x1;
+    if(dx<=1e-7) continue;
+    const i1=beamNearestNode(nodes,x1), i2=beamNearestNode(nodes,x2);
+    F[2*i1]-=it.w*dx/2;
+    F[2*i2]-=it.w*dx/2;
+  }
 }
 function beamInterp(xs,vals,x){
   if(x<=xs[0]) return vals[0];
@@ -2351,7 +2418,7 @@ function beamApplyFreeDeflection(b,pts,system,anchors){
   pts.forEach((p,i)=>{ p.Y=yy[i]+c1*p.x+c0; });
 }
 function beamFreeCalc(b){
-  const nodes=Array.from(new Set([0,b.L].concat((b.items||[]).map(it=>Number(it.x.toFixed(5)))))).sort((a,b)=>a-b);
+  const nodes=beamAnalysisNodes(b);
   if(nodes.length<2) return {b, pts:[], reactions:[], valid:false, note:"梁の長さが足りません。", mode:"free", maxN:0,maxV:0,maxM:0,maxY:0,yMax:0,yAt:{x:0,Y:0}};
   const n=nodes.length, nd=n*2, K=Array.from({length:nd},()=>Array(nd).fill(0)), F=Array(nd).fill(0), EI=b.EI;
   for(let e=0;e<n-1;e++){
@@ -2365,6 +2432,7 @@ function beamFreeCalc(b){
     const idx=beamNearestNode(nodes,it.x);
     if(it.type==="force") F[2*idx]-=it.P;
     if(it.type==="moment") F[2*idx+1]-=it.M;
+    if(it.type==="dist") beamApplyDistLoad(F,nodes,it);
   });
   const constrained=new Set();
   (b.items||[]).forEach(it=>{
@@ -2428,7 +2496,7 @@ function beamControls(sid){
   const b=beamState(sid);
   const base=`${beamModeButtons(sid,b)}${rangeControl(sid,"L","スパン L",2,12,0.1,"m")}${symbolControl(sid,"LLabel","L の表示記号","L")}`;
   if(b.mode==="free") return `${base}${rangeControl(sid,"EI","曲げ剛性 EI",1000,200000,1000,"kN m²")}${symbolControl(sid,"EILabel","EI の表示記号","EI")}
-    <div class="hintbox"><b>梁上をクリックで追加</b><div class="mini">下のツールを選んで、梁の好きな位置をクリックします。力は + が下向き、モーメントは + が時計回りです。</div></div>
+    <div class="hintbox"><b>梁上をクリックで追加</b><div class="mini">下のツールを選んで、梁の好きな位置をクリックします。力と分布荷重は + が下向き、モーメントは + が時計回りです。分布荷重の終点と強度は下の一覧で調整できます。</div></div>
     <div class="beamtools">${Object.entries(BEAM_TOOLS).map(([k,l])=>`<button class="${b.tool===k?'on':''}" onclick="beamSetTool('${sid}','${k}')">${esc(l)}</button>`).join("")}</div>
     <div class="rowbtns"><button onclick="beamPreset('${sid}','simple')">単純ばり配置</button><button onclick="beamPreset('${sid}','cantilever')">片持ち配置</button></div>
     ${beamItemList(sid,b)}
@@ -2454,6 +2522,7 @@ function beamItemList(sid,b){
   const rows=(b.items||[]).map((it,i)=>{
     const val=it.type==="force" ? `<label><span>P kN (+下)</span><input type="text" value="${esc(it.PLabel||fmt(it.P,2))}" onchange="beamSetItemSmart('${sid}',${i},'P',this.value)"></label><label><span>P 記号</span><input value="${esc(it.PLabel||"")}" placeholder="P" onchange="beamSetItem('${sid}',${i},'PLabel',this.value)"></label>`
       : it.type==="moment" ? `<label><span>M kN m (+時計)</span><input type="text" value="${esc(it.MLabel||fmt(it.M,2))}" onchange="beamSetItemSmart('${sid}',${i},'M',this.value)"></label><label><span>M 記号</span><input value="${esc(it.MLabel||"")}" placeholder="M" onchange="beamSetItem('${sid}',${i},'MLabel',this.value)"></label>`
+      : it.type==="dist" ? `<label><span>終点 x₂ m</span><input type="text" value="${esc(it.x2Label||fmt(it.x2,2))}" onchange="beamSetItemSmart('${sid}',${i},'x2',this.value)"></label><label><span>x₂ 記号</span><input value="${esc(it.x2Label||"")}" placeholder="b" onchange="beamSetItem('${sid}',${i},'x2Label',this.value)"></label><label><span>w kN/m (+下)</span><input type="text" value="${esc(it.wLabel||fmt(it.w,2))}" onchange="beamSetItemSmart('${sid}',${i},'w',this.value)"></label><label><span>w 記号</span><input value="${esc(it.wLabel||"")}" placeholder="w" onchange="beamSetItem('${sid}',${i},'wLabel',this.value)"></label>`
       : `<div class="mini">反力を自動計算</div>`;
     return `<div class="itemrow">
       <div class="itemrow-head"><span class="itemkind">${esc(BEAM_TOOLS[it.type])}</span><button class="ghost" onclick="beamRemoveItem('${sid}',${i})">削除</button></div>
@@ -2494,6 +2563,21 @@ function momentMark(x,y,M,label,color="#dc2626"){
   return `<text x="${x}" y="${y-30}" text-anchor="middle" fill="${color}" font-size="28" font-weight="700">${glyph}</text>
     <text x="${x+18*s}" y="${y-43}" fill="${color}" font-size="12" font-weight="700">${esc(label)}</text>`;
 }
+function distLoadMark(it,x,y){
+  const xa=x(it.x), xb=x(it.x2), left=Math.min(xa,xb), right=Math.max(xa,xb), mid=(left+right)/2;
+  const n=Math.max(3, Math.min(10, Math.round((right-left)/56)));
+  const label=beamValLabel(it.wLabel,it.w,"kN/m");
+  const arrows=Array.from({length:n},(_,i)=>{
+    const xx=left+(right-left)*(i+.5)/n;
+    const text=i===0?label:"";
+    return it.w>=0 ? arrowDown(xx,24,y-18,text) : arrowUp(xx,y-18,28,text,"#dc2626");
+  }).join("");
+  const railY=it.w>=0?24:28;
+  return `<line x1="${left}" y1="${railY}" x2="${right}" y2="${railY}" stroke="#dc2626" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="${left}" y="${Math.min(railY,y-18)}" width="${Math.max(1,right-left)}" height="${Math.abs((y-18)-railY)}" fill="#dc2626" opacity=".08"/>
+    ${arrows}
+    <text x="${mid}" y="${railY-7}" text-anchor="middle" fill="#dc2626" font-size="11" font-weight="700">${esc(beamSpanLabel(it))}</text>`;
+}
 function beamSvg(sid,c){
   if(c.b.mode==="free") return beamFreeSvg(sid,c);
   const b=c.b, x0=70, x1=710, y=82, bw=x1-x0, x=v=>x0+bw*v/b.L;
@@ -2525,6 +2609,7 @@ function beamSvg(sid,c){
 function beamFreeSvg(sid,c){
   const b=c.b, x0=70, x1=710, y=92, bw=x1-x0, x=v=>x0+bw*v/b.L;
   const supports=b.items.filter(it=>it.type==="pin"||it.type==="roller"||it.type==="fixed").map(it=>supportIcon(it.type,x(it.x),y)).join("");
+  const distLoads=b.items.filter(it=>it.type==="dist").map(it=>distLoadMark(it,x,y)).join("");
   const loads=b.items.filter(it=>it.type==="force").map(it=>{
     const xx=x(it.x), label=beamValLabel(it.PLabel,it.P,"kN");
     return it.P>=0 ? arrowDown(xx,24,y-18,label) : arrowUp(xx,y-20,28,label,"#dc2626");
@@ -2536,10 +2621,12 @@ function beamFreeSvg(sid,c){
     const mo = Number.isFinite(r.MA) ? momentMark(xx+22,y+90,r.MA,`MA=${fmt(r.MA,1)}`,"#16a34a") : "";
     return ar+mo;
   }).join("");
-  const marks=b.items.map(it=>`<line x1="${x(it.x)}" y1="142" x2="${x(it.x)}" y2="150" stroke="var(--c-line)" stroke-width="1"/><text x="${x(it.x)}" y="164" text-anchor="middle" fill="var(--c-sub)" font-size="10">${esc(beamXLabel(it))}</text>`).join("");
+  const marks=b.items.map(it=>it.type==="dist"
+    ? `<line x1="${x(it.x)}" y1="138" x2="${x(it.x)}" y2="152" stroke="var(--c-line)" stroke-width="1"/><line x1="${x(it.x2)}" y1="138" x2="${x(it.x2)}" y2="152" stroke="var(--c-line)" stroke-width="1"/><text x="${(x(it.x)+x(it.x2))/2}" y="164" text-anchor="middle" fill="var(--c-sub)" font-size="10">${esc(beamSpanLabel(it))}</text>`
+    : `<line x1="${x(it.x)}" y1="142" x2="${x(it.x)}" y2="150" stroke="var(--c-line)" stroke-width="1"/><text x="${x(it.x)}" y="164" text-anchor="middle" fill="var(--c-sub)" font-size="10">${esc(beamXLabel(it))}</text>`).join("");
   return `<svg class="beamsvg" viewBox="0 0 760 180" role="img" onclick="beamPick('${sid}',event)" title="ツールを選んで梁上をクリックすると部材を追加します">
     <rect x="0" y="0" width="760" height="180" fill="transparent"/>
-    ${loads}${moments}
+    ${distLoads}${loads}${moments}
     <line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="var(--c-text)" stroke-width="8" stroke-linecap="round"/>
     ${supports}${reactions}
     <line x1="${x0}" y1="144" x2="${x1}" y2="144" stroke="var(--c-line)" stroke-width="1"/>
@@ -2595,7 +2682,7 @@ function beamLab(sid){
         <div class="svgpanel">${beamSvg(sid,c)}</div>
         ${beamMetrics(c)}
         <div class="beam-readout"><span class="tag">N図: 0</span><span class="tag">Q図: ${fmt(c.maxV,2)} kN</span><span class="tag">M図: ${fmt(c.maxM,2)} kN m</span></div>
-        <div class="beamnote">${b.mode==="free"?"自由配置は剛性法で不静定ばりまで計算します。力は下向き +、集中モーメントは時計回り + です。":"符号は下向き荷重で、片持ちばりの固定端側曲げを負側に描いています。"} たわみは入力した ${esc(b.EILabel||"EI")} による概算です。</div>
+        <div class="beamnote">${b.mode==="free"?"自由配置は剛性法で不静定ばりまで計算します。力・分布荷重は下向き +、集中モーメントは時計回り + です。":"符号は下向き荷重で、片持ちばりの固定端側曲げを負側に描いています。"} たわみは入力した ${esc(b.EILabel||"EI")} による概算です。</div>
       </section>
     </div>
     ${diagramSvg("N図(軸力)",c,"N","kN","var(--c-sub)")}
