@@ -1,4 +1,4 @@
-const CACHE_NAME = "study-app-pwa-v3";
+const CACHE_NAME = "study-app-pwa-v4";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -15,7 +15,8 @@ const APP_SHELL = [
   "./subjects/suiri1.js",
   "./subjects/suiri3.js",
   "./subjects/oyosugaku1.js",
-  "./subjects/keikaku2.js"
+  "./subjects/keikaku2.js",
+  "./subjects/challenge-pack.js"
 ];
 
 self.addEventListener("install", event => {
