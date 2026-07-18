@@ -2112,7 +2112,7 @@ function mistakesView(sid){
 
 /* --- 構造図シミュレータ --- */
 const BEAM_DEFAULT = {mode:"template", support:"simple", load:"point", L:6, P:20, a:3, w:5, EI:20000, LLabel:"", PLabel:"", aLabel:"", wLabel:"", EILabel:"", tool:"force", items:[]};
-const BEAM_TOOLS = {pin:"ピン", roller:"ローラー", fixed:"固定端", force:"力", moment:"モーメント", dist:"分布荷重"};
+const BEAM_TOOLS = {pin:"ピン", roller:"ローラー", fixed:"固定端", hinge:"ヒンジ", force:"力", moment:"モーメント", dist:"分布荷重"};
 function num(v, fallback){ const n=Number(v); return Number.isFinite(n)?n:fallback; }
 function clamp(v,min,max){ return Math.max(min, Math.min(max, v)); }
 function fmt(n,d=2){
@@ -2176,6 +2176,7 @@ function beamNormalizeItem(it,b){
     if(Math.abs(w)<0.001) w=5;
     return {type,x:a,x2:bb,xLabel,x2Label:beamCleanLabel(it.x2Label||""),w,wLabel:beamCleanLabel(it.wLabel||"")};
   }
+  if(type==="hinge") return {type,x,xLabel};
   return {type,x,xLabel};
 }
 function beamValLabel(label,value,unit=""){ return label ? label : `${fmt(value,1)}${unit}`; }
@@ -2342,7 +2343,7 @@ function beamAnalysisNodes(b){
   });
   return Array.from(xs).sort((a,b)=>a-b);
 }
-function beamApplyDistLoad(F,nodes,it){
+function beamApplyDistLoad(F,nodes,it,map){
   const a=Math.min(it.x,it.x2), bb=Math.max(it.x,it.x2), len=bb-a;
   if(len<=1e-6) return;
   const inside=nodes.filter(x=>x>=a-1e-7 && x<=bb+1e-7);
@@ -2350,8 +2351,8 @@ function beamApplyDistLoad(F,nodes,it){
     const x1=inside[i], x2=inside[i+1], dx=x2-x1;
     if(dx<=1e-7) continue;
     const i1=beamNearestNode(nodes,x1), i2=beamNearestNode(nodes,x2);
-    F[2*i1]-=it.w*dx/2;
-    F[2*i2]-=it.w*dx/2;
+    F[map.v[i1]]-=it.w*dx/2;
+    F[map.v[i2]]-=it.w*dx/2;
   }
 }
 function beamInterp(xs,vals,x){
@@ -2388,6 +2389,40 @@ function beamNearestNode(nodes,x){
   nodes.forEach((v,i)=>{ const dd=Math.abs(v-x); if(dd<d){ d=dd; best=i; } });
   return best;
 }
+function beamHingeNodeSet(b,nodes){
+  const set=new Set();
+  (b.items||[]).forEach(it=>{
+    if(it.type!=="hinge") return;
+    const idx=beamNearestNode(nodes,it.x);
+    if(idx>0 && idx<nodes.length-1) set.add(idx);
+  });
+  return set;
+}
+function beamFreeDofMap(b,nodes){
+  const hinges=beamHingeNodeSet(b,nodes);
+  const v=[], theta=[], thetaLeft=[], thetaRight=[];
+  let nd=0;
+  nodes.forEach((_,i)=>{ v[i]=nd++; });
+  nodes.forEach((_,i)=>{
+    if(hinges.has(i)){
+      thetaLeft[i]=nd++;
+      thetaRight[i]=nd++;
+      theta[i]=thetaRight[i];
+    }else{
+      theta[i]=thetaLeft[i]=thetaRight[i]=nd++;
+    }
+  });
+  return {v,theta,thetaLeft,thetaRight,hinges,nd};
+}
+function beamElementDofs(map,e){
+  return [map.v[e], map.thetaRight[e], map.v[e+1], map.thetaLeft[e+1]];
+}
+function beamThetaDofsAt(map,idx){
+  return Array.from(new Set([map.thetaLeft[idx], map.thetaRight[idx]]));
+}
+function beamMomentDof(map,idx){
+  return map.hinges.has(idx) ? map.thetaRight[idx] : map.theta[idx];
+}
 function beamElementSample(EI,x1,x2,u,x){
   const L=x2-x1, r=L?clamp((x-x1)/L,0,1):0;
   const [v1,t1,v2,t2]=u;
@@ -2422,7 +2457,7 @@ function beamSectionFromLeft(b,reactions,x){
   const tol=1e-7;
   let V=0, M=0;
   (reactions||[]).forEach(r=>{
-    if(r.x < x-tol){
+    if(r.x <= x+tol){
       if(Number.isFinite(r.R)){ V+=r.R; M+=r.R*(x-r.x); }
       if(Number.isFinite(r.MA)) M+=r.MA;
     }
@@ -2488,25 +2523,25 @@ function beamApplyFreeDeflection(b,pts,system,anchors){
 function beamFreeCalc(b){
   const nodes=beamAnalysisNodes(b);
   if(nodes.length<2) return {b, pts:[], reactions:[], valid:false, note:"梁の長さが足りません。", mode:"free", maxN:0,maxV:0,maxM:0,maxY:0,yMax:0,yAt:{x:0,Y:0}};
-  const n=nodes.length, nd=n*2, K=Array.from({length:nd},()=>Array(nd).fill(0)), F=Array(nd).fill(0), EI=b.EI;
+  const n=nodes.length, map=beamFreeDofMap(b,nodes), nd=map.nd, K=Array.from({length:nd},()=>Array(nd).fill(0)), F=Array(nd).fill(0), EI=b.EI;
   for(let e=0;e<n-1;e++){
     const L=nodes[e+1]-nodes[e]; if(L<=1e-6) continue;
     const k=EI/Math.pow(L,3);
     const ke=[[12,6*L,-12,6*L],[6*L,4*L*L,-6*L,2*L*L],[-12,-6*L,12,-6*L],[6*L,2*L*L,-6*L,4*L*L]].map(row=>row.map(v=>v*k));
-    const dof=[2*e,2*e+1,2*(e+1),2*(e+1)+1];
+    const dof=beamElementDofs(map,e);
     for(let i=0;i<4;i++) for(let j=0;j<4;j++) K[dof[i]][dof[j]]+=ke[i][j];
   }
   (b.items||[]).forEach(it=>{
     const idx=beamNearestNode(nodes,it.x);
-    if(it.type==="force") F[2*idx]-=it.P;
-    if(it.type==="moment") F[2*idx+1]-=it.M;
-    if(it.type==="dist") beamApplyDistLoad(F,nodes,it);
+    if(it.type==="force") F[map.v[idx]]-=it.P;
+    if(it.type==="moment") F[beamMomentDof(map,idx)]-=it.M;
+    if(it.type==="dist") beamApplyDistLoad(F,nodes,it,map);
   });
   const constrained=new Set();
   (b.items||[]).forEach(it=>{
     const idx=beamNearestNode(nodes,it.x);
-    if(it.type==="pin"||it.type==="roller"||it.type==="fixed") constrained.add(2*idx);
-    if(it.type==="fixed") constrained.add(2*idx+1);
+    if(it.type==="pin"||it.type==="roller"||it.type==="fixed") constrained.add(map.v[idx]);
+    if(it.type==="fixed") beamThetaDofsAt(map,idx).forEach(dof=>constrained.add(dof));
   });
   const free=Array.from({length:nd},(_,i)=>i).filter(i=>!constrained.has(i));
   const A=free.map(i=>free.map(j=>K[i][j]));
@@ -2517,12 +2552,13 @@ function beamFreeCalc(b){
   const R=K.map(row=>row.reduce((a,v,j)=>a+v*U[j],0)).map((v,i)=>v-F[i]);
   const reactions=(b.items||[]).filter(it=>it.type==="pin"||it.type==="roller"||it.type==="fixed").map(it=>{
     const idx=beamNearestNode(nodes,it.x);
-    return {type:it.type,x:it.x,R:R[2*idx],MA:it.type==="fixed"?-R[2*idx+1]:undefined};
+    const ma=beamThetaDofsAt(map,idx).reduce((sum,dof)=>sum+R[dof],0);
+    return {type:it.type,x:it.x,R:R[map.v[idx]],MA:it.type==="fixed"?-ma:undefined};
   });
   const xs=beamEventXs(b), pts=xs.map(x=>{
     let e=Math.max(0,nodes.findIndex((v,i)=>i<n-1 && x>=v-1e-7 && x<=nodes[i+1]+1e-7));
     if(e<0) e=n-2;
-    const dof=[2*e,2*e+1,2*(e+1),2*(e+1)+1], sample=beamElementSample(EI,nodes[e],nodes[e+1],dof.map(i=>U[i]),x);
+    const dof=beamElementDofs(map,e), sample=beamElementSample(EI,nodes[e],nodes[e+1],dof.map(i=>U[i]),x);
     const section=beamSectionForces(b,reactions,x);
     return {x,N:section.N,V:section.V,M:section.M,Y:sample.Y};
   });
@@ -2565,7 +2601,7 @@ function beamControls(sid){
   const b=beamState(sid);
   const base=`${beamModeButtons(sid,b)}${rangeControl(sid,"L","スパン L",2,12,0.1,"m")}${symbolControl(sid,"LLabel","L の表示記号","L")}`;
   if(b.mode==="free") return `${base}${rangeControl(sid,"EI","曲げ剛性 EI",1000,200000,1000,"kN m²")}${symbolControl(sid,"EILabel","EI の表示記号","EI")}
-    <div class="hintbox"><b>梁上をクリックで追加</b><div class="mini">下のツールを選んで、梁の好きな位置をクリックします。力と分布荷重は + が下向き、モーメントは + が時計回りです。分布荷重の終点と強度は下の一覧で調整できます。</div></div>
+    <div class="hintbox"><b>梁上をクリックで追加</b><div class="mini">下のツールを選んで、梁の好きな位置をクリックします。ヒンジは曲げモーメントを伝えない内部接合です。力と分布荷重は + が下向き、モーメントは + が時計回りです。</div></div>
     <div class="beamtools">${Object.entries(BEAM_TOOLS).map(([k,l])=>`<button class="${b.tool===k?'on':''}" onclick="beamSetTool('${sid}','${k}')">${esc(l)}</button>`).join("")}</div>
     <div class="rowbtns"><button onclick="beamPreset('${sid}','simple')">単純ばり配置</button><button onclick="beamPreset('${sid}','cantilever')">片持ち配置</button></div>
     ${beamItemList(sid,b)}
@@ -2592,6 +2628,7 @@ function beamItemList(sid,b){
     const val=it.type==="force" ? `<label><span>P kN (+下)</span><input type="text" value="${esc(it.PLabel||fmt(it.P,2))}" onchange="beamSetItemSmart('${sid}',${i},'P',this.value)"></label><label><span>P 記号</span><input value="${esc(it.PLabel||"")}" placeholder="P" onchange="beamSetItem('${sid}',${i},'PLabel',this.value)"></label>`
       : it.type==="moment" ? `<label><span>M kN m (+時計)</span><input type="text" value="${esc(it.MLabel||fmt(it.M,2))}" onchange="beamSetItemSmart('${sid}',${i},'M',this.value)"></label><label><span>M 記号</span><input value="${esc(it.MLabel||"")}" placeholder="M" onchange="beamSetItem('${sid}',${i},'MLabel',this.value)"></label>`
       : it.type==="dist" ? `<label><span>終点 x₂ m</span><input type="text" value="${esc(it.x2Label||fmt(it.x2,2))}" onchange="beamSetItemSmart('${sid}',${i},'x2',this.value)"></label><label><span>x₂ 記号</span><input value="${esc(it.x2Label||"")}" placeholder="b" onchange="beamSetItem('${sid}',${i},'x2Label',this.value)"></label><label><span>w kN/m (+下)</span><input type="text" value="${esc(it.wLabel||fmt(it.w,2))}" onchange="beamSetItemSmart('${sid}',${i},'w',this.value)"></label><label><span>w 記号</span><input value="${esc(it.wLabel||"")}" placeholder="w" onchange="beamSetItem('${sid}',${i},'wLabel',this.value)"></label>`
+      : it.type==="hinge" ? `<div class="mini">曲げモーメントを伝えず、たわみだけ連続させます</div>`
       : `<div class="mini">反力を自動計算</div>`;
     return `<div class="itemrow">
       <div class="itemrow-head"><span class="itemkind">${esc(BEAM_TOOLS[it.type])}</span><button class="ghost" onclick="beamRemoveItem('${sid}',${i})">削除</button></div>
@@ -2631,6 +2668,11 @@ function momentMark(x,y,M,label,color="#dc2626"){
   const s=M>=0?1:-1, glyph=M>=0?"↻":"↺";
   return `<text x="${x}" y="${y-30}" text-anchor="middle" fill="${color}" font-size="28" font-weight="700">${glyph}</text>
     <text x="${x+18*s}" y="${y-43}" fill="${color}" font-size="12" font-weight="700">${esc(label)}</text>`;
+}
+function hingeMark(x,y){
+  return `<circle cx="${x}" cy="${y}" r="10" fill="var(--c-bg)" stroke="#d97706" stroke-width="3"/>
+    <line x1="${x-10}" y1="${y}" x2="${x+10}" y2="${y}" stroke="#d97706" stroke-width="2"/>
+    <text x="${x}" y="${y-16}" text-anchor="middle" fill="#d97706" font-size="11" font-weight="700">H</text>`;
 }
 function distLoadMark(it,x,y){
   const xa=x(it.x), xb=x(it.x2), left=Math.min(xa,xb), right=Math.max(xa,xb), mid=(left+right)/2;
@@ -2678,6 +2720,7 @@ function beamSvg(sid,c){
 function beamFreeSvg(sid,c){
   const b=c.b, x0=70, x1=710, y=92, bw=x1-x0, x=v=>x0+bw*v/b.L;
   const supports=b.items.filter(it=>it.type==="pin"||it.type==="roller"||it.type==="fixed").map(it=>supportIcon(it.type,x(it.x),y)).join("");
+  const hinges=b.items.filter(it=>it.type==="hinge").map(it=>hingeMark(x(it.x),y)).join("");
   const distLoads=b.items.filter(it=>it.type==="dist").map(it=>distLoadMark(it,x,y)).join("");
   const loads=b.items.filter(it=>it.type==="force").map(it=>{
     const xx=x(it.x), label=beamValLabel(it.PLabel,it.P,"kN");
@@ -2697,7 +2740,7 @@ function beamFreeSvg(sid,c){
     <rect x="0" y="0" width="760" height="180" fill="transparent"/>
     ${distLoads}${loads}${moments}
     <line x1="${x0}" y1="${y}" x2="${x1}" y2="${y}" stroke="var(--c-text)" stroke-width="8" stroke-linecap="round"/>
-    ${supports}${reactions}
+    ${supports}${hinges}${reactions}
     <line x1="${x0}" y1="144" x2="${x1}" y2="144" stroke="var(--c-line)" stroke-width="1"/>
     <line x1="${x0}" y1="138" x2="${x0}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
     <line x1="${x1}" y1="138" x2="${x1}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
