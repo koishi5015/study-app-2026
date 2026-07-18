@@ -2755,7 +2755,7 @@ function diagramSvg(title,c,key,unit,color,downPositive=false){
   const sy=v=>downPositive ? mid+(v/max)*amp : mid-(v/max)*amp;
   const pts=c.pts.map(p=>`${fmt(sx(p.x),2)},${fmt(sy(p[key]),2)}`).join(" ");
   const area=`${x0},${mid} ${pts} ${x1},${mid}`;
-  return `<div class="svgpanel"><div class="diagram-title"><b>${esc(title)}</b><span class="mini">max ${fmt(max,3)} ${esc(unit)}</span></div>
+  return `<div class="svgpanel"><div class="diagram-title"><b>${esc(title)}</b><span class="mini">${downPositive?"下向き + / ":""}max ${fmt(max,3)} ${esc(unit)}</span></div>
     <svg viewBox="0 0 760 176" role="img">
       <line x1="${x0}" y1="${mid}" x2="${x1}" y2="${mid}" stroke="var(--c-line)" stroke-width="1.5"/>
       <line x1="${x0}" y1="26" x2="${x0}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
@@ -2798,8 +2798,8 @@ function beamLab(sid){
       </section>
     </div>
     ${diagramSvg("N図(軸力)",c,"N","kN","var(--c-sub)")}
-    ${diagramSvg("Q図(せん断力)",c,"V","kN","#2563eb")}
-    ${diagramSvg("M図(曲げモーメント)",c,"M","kN m","#d97706")}
+    ${diagramSvg("Q図(せん断力)",c,"V","kN","#2563eb",true)}
+    ${diagramSvg("M図(曲げモーメント)",c,"M","kN m","#d97706",true)}
     ${diagramSvg("たわみ概形",c,"Y","m","#16a34a",true)}`;
 }
 
