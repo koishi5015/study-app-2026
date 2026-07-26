@@ -479,6 +479,48 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
 .simcontrols{top:70px}
 .diagram-card .svgpanel svg{min-width:520px}
 .beamtools button.on{background:var(--subject-accent,var(--c-accent))}
+.beam-mobile-nav{display:none}
+.beam-anchor{scroll-margin-top:82px}
+.beam-live-region{min-width:0}
+.simcontrols .ctrlrow input[type="range"]{
+  appearance:none;
+  -webkit-appearance:none;
+  height:44px;
+  padding:0;
+  background:transparent;
+  cursor:ew-resize;
+  touch-action:pan-y;
+}
+.simcontrols .ctrlrow input[type="range"]::-webkit-slider-runnable-track{
+  height:8px;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--subject-accent,var(--c-accent)) 28%,var(--c-line));
+}
+.simcontrols .ctrlrow input[type="range"]::-webkit-slider-thumb{
+  appearance:none;
+  -webkit-appearance:none;
+  width:24px;
+  height:24px;
+  margin-top:-8px;
+  border:3px solid var(--c-card-solid);
+  border-radius:50%;
+  background:var(--subject-accent,var(--c-accent));
+  box-shadow:0 2px 8px rgba(16,24,40,.2);
+}
+.simcontrols .ctrlrow input[type="range"]::-moz-range-track{
+  height:8px;
+  border:0;
+  border-radius:999px;
+  background:color-mix(in srgb,var(--subject-accent,var(--c-accent)) 28%,var(--c-line));
+}
+.simcontrols .ctrlrow input[type="range"]::-moz-range-thumb{
+  width:24px;
+  height:24px;
+  border:3px solid var(--c-card-solid);
+  border-radius:50%;
+  background:var(--subject-accent,var(--c-accent));
+  box-shadow:0 2px 8px rgba(16,24,40,.2);
+}
 @media (max-width:900px){
   .hero-panel,.dash-layout,.subject-hero{grid-template-columns:1fr}
   .hero-metrics{max-width:520px}
@@ -486,6 +528,44 @@ input,select,textarea{border-radius:var(--radius);background:var(--c-card-solid)
 @media (max-width:760px){
   .simgrid{grid-template-columns:1fr}
   .simcontrols{position:static}
+  .beam-mobile-nav{
+    position:sticky;
+    top:72px;
+    z-index:11;
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:4px;
+    margin:0 0 10px;
+    padding:6px;
+    border:1px solid color-mix(in srgb,var(--c-line) 78%,transparent);
+    border-radius:var(--radius);
+    background:color-mix(in srgb,var(--c-bg) 90%,transparent);
+    box-shadow:0 8px 20px rgba(16,24,40,.08);
+    backdrop-filter:blur(16px);
+  }
+  .beam-mobile-nav button{
+    min-width:0;
+    min-height:40px;
+    padding:6px 2px;
+    font-size:.76rem;
+  }
+  .beam-anchor{scroll-margin-top:132px}
+  .beamtools{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .beamtools button,.itemrow-head button{min-height:44px}
+  .itemgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ctrlrow{grid-template-columns:minmax(0,1fr) 88px 36px}
+  .ctrlrow input[type="text"],.selectrow select{min-height:44px}
+  .simctrl{margin:8px 0}
+  .simcontrols,.beam-output-card{padding:12px}
+  .beam-output-card .svgpanel svg,.beam-diagram svg{min-width:min(500px,max(320px,calc(100vw - 64px)))}
+  .svgpanel{
+    padding:7px;
+    scrollbar-width:thin;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior-inline:contain;
+  }
+  .metricgrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .beam-symbol{margin-top:-2px}
 }
 @media (max-width:640px){
   #app{padding:12px 12px 64px}
@@ -2188,14 +2268,63 @@ function beamInputValue(b,k,value){
   const lk=beamLabelKey(k);
   return lk && b[lk] ? b[lk] : fmt(value,2);
 }
-function beamSetSymbol(sid,k,v){ const b=beamState(sid); b[k]=beamCleanLabel(v); beamNormalize(b); save(); render(); }
+let beamLiveFrame=0;
+let beamLiveSid="";
+let beamLiveSaveTimer=0;
+function beamRenderStable(){
+  const x=window.scrollX, y=window.scrollY;
+  render();
+  window.scrollTo(x,y);
+  requestAnimationFrame(()=>window.scrollTo(x,y));
+}
+function beamScheduleOutput(sid){
+  beamLiveSid=sid;
+  if(beamLiveFrame) return;
+  beamLiveFrame=requestAnimationFrame(()=>{
+    beamLiveFrame=0;
+    beamRenderOutput(beamLiveSid);
+  });
+}
+function beamQueueLiveSave(){
+  clearTimeout(beamLiveSaveTimer);
+  beamLiveSaveTimer=setTimeout(()=>{
+    beamLiveSaveTimer=0;
+    save();
+  },320);
+}
+function beamSetLive(sid,k,v,control){
+  const b=beamState(sid);
+  b[k]=Number(v);
+  beamNormalize(b);
+  if(control){
+    const valueInput=control.closest(".ctrlrow")?.querySelector("[data-beam-value]");
+    const labelKey=beamLabelKey(k);
+    if(valueInput && (!labelKey || !b[labelKey])) valueInput.value=fmt(b[k],2);
+  }
+  beamScheduleOutput(sid);
+  beamQueueLiveSave();
+}
+function beamCommitLive(sid,k){
+  clearTimeout(beamLiveSaveTimer);
+  beamLiveSaveTimer=0;
+  save();
+  if(k==="L") beamRenderStable();
+  else beamRenderOutput(sid);
+}
+function beamScrollTo(sid,part){
+  const el=document.getElementById(`beam-${part}-${sid}`);
+  if(!el) return;
+  const reduce=window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  el.scrollIntoView({behavior:reduce?"auto":"smooth",block:"start"});
+}
+function beamSetSymbol(sid,k,v){ const b=beamState(sid); b[k]=beamCleanLabel(v); beamNormalize(b); save(); beamRenderStable(); }
 function beamSetMaybeSymbol(sid,k,v){
   const b=beamState(sid), raw=String(v||"").trim(), lk=beamLabelKey(k);
   const n=Number(raw.replace(/,/g,""));
   if(raw==="" && lk) b[lk]="";
   else if(Number.isFinite(n)){ b[k]=n; if(lk) b[lk]=""; }
   else if(lk) b[lk]=beamCleanLabel(raw);
-  beamNormalize(b); save(); render();
+  beamNormalize(b); save(); beamRenderStable();
 }
 function beamSetItemSmart(sid,i,k,v){
   const b=beamState(sid), it=b.items[i]; if(!it) return;
@@ -2225,7 +2354,7 @@ function beamSetItemSmart(sid,i,k,v){
     else if(Number.isFinite(n)){ it.w=n; it.wLabel=""; }
     else it.wLabel=beamCleanLabel(raw);
   }
-  beamNormalize(b); save(); render();
+  beamNormalize(b); save(); beamRenderStable();
 }
 function beamSet(sid,k,v){
   const b=beamState(sid);
@@ -2233,15 +2362,15 @@ function beamSet(sid,k,v){
   else b[k]=Number(v);
   if(k==="mode" && v==="free" && !b.items.length) b.items=beamDefaultItems(b);
   beamNormalize(b);
-  save(); render();
+  save(); beamRenderStable();
 }
 function beamSetMode(sid,mode){
   const b=beamState(sid);
   b.mode=mode;
   if(mode==="free") b.items=beamDefaultItems(b);
-  beamNormalize(b); save(); render();
+  beamNormalize(b); save(); beamRenderStable();
 }
-function beamSetTool(sid,tool){ const b=beamState(sid); b.tool=tool; beamNormalize(b); save(); render(); }
+function beamSetTool(sid,tool){ const b=beamState(sid); b.tool=tool; beamNormalize(b); save(); beamRenderStable(); }
 function beamSetItem(sid,i,k,v){
   const b=beamState(sid);
   const it=b.items[i]; if(!it) return;
@@ -2255,7 +2384,7 @@ function beamSetItem(sid,i,k,v){
   if(k==="PLabel") it.PLabel=beamCleanLabel(v);
   if(k==="MLabel") it.MLabel=beamCleanLabel(v);
   if(k==="wLabel") it.wLabel=beamCleanLabel(v);
-  beamNormalize(b); save(); render();
+  beamNormalize(b); save(); beamRenderStable();
 }
 function beamAddItem(sid,type,x){
   const b=beamState(sid);
@@ -2264,19 +2393,19 @@ function beamAddItem(sid,type,x){
   const span=Math.min(1.2,b.L/4);
   const extra=type==="dist" ? {x2:clamp(at+span,0,b.L),w:b.w||5} : {};
   b.items.push(beamItem(type,at,extra));
-  beamNormalize(b); save(); render();
+  beamNormalize(b); save(); beamRenderStable();
 }
-function beamRemoveItem(sid,i){ const b=beamState(sid); b.items.splice(i,1); beamNormalize(b); save(); render(); }
+function beamRemoveItem(sid,i){ const b=beamState(sid); b.items.splice(i,1); beamNormalize(b); save(); beamRenderStable(); }
 function beamPreset(sid,type){
   const b=beamState(sid);
   if(type==="cantilever") b.items=[beamItem("fixed",0), beamItem("force",b.L,{P:20})];
   else b.items=[beamItem("pin",0), beamItem("roller",b.L), beamItem("force",b.L/2,{P:20})];
-  b.mode="free"; beamNormalize(b); save(); render();
+  b.mode="free"; beamNormalize(b); save(); beamRenderStable();
 }
 function beamReset(sid){
   const m=meta(); if(!m.beam || typeof m.beam !== "object") m.beam={};
   m.beam[sid]=Object.assign({},BEAM_DEFAULT);
-  save(); render();
+  save(); beamRenderStable();
 }
 function beamPick(sid,event){
   const b=beamState(sid);
@@ -2287,7 +2416,7 @@ function beamPick(sid,event){
   if(b.mode==="free"){ beamAddItem(sid,b.tool,at); return; }
   b.load="point";
   b.a=clamp(at,0.05,b.support==="simple"?b.L-0.05:b.L);
-  save(); render();
+  save(); beamRenderStable();
 }
 function beamAt(b,x){
   const L=b.L, P=b.P, a=b.a, w=b.w, EI=b.EI;
@@ -2584,13 +2713,13 @@ function beamCalc(b){
 }
 function symbolControl(sid,k,label,ph){
   const b=beamState(sid);
-  return `<label class="simctrl"><span>${esc(label)}</span><input style="width:100%" value="${esc(b[k]||"")}" placeholder="${esc(ph||"")}" onchange="beamSetSymbol('${sid}','${k}',this.value)"></label>`;
+  return `<label class="simctrl beam-symbol"><span>${esc(label)}</span><input style="width:100%" value="${esc(b[k]||"")}" placeholder="${esc(ph||"")}" enterkeyhint="done" spellcheck="false" onchange="beamSetSymbol('${sid}','${k}',this.value)"></label>`;
 }
 function rangeControl(sid,k,label,min,max,step,unit){
   const b=beamState(sid), val=b[k];
   return `<label class="simctrl"><span>${esc(label)}</span><div class="ctrlrow">
-    <input type="range" min="${min}" max="${max}" step="${step}" value="${esc(val)}" oninput="beamSet('${sid}','${k}',this.value)">
-    <input type="text" value="${esc(beamInputValue(b,k,val))}" onchange="beamSetMaybeSymbol('${sid}','${k}',this.value)">
+    <input type="range" data-beam-key="${esc(k)}" aria-label="${esc(label)}" min="${min}" max="${max}" step="${step}" value="${esc(val)}" oninput="beamSetLive('${sid}','${k}',this.value,this)" onchange="beamCommitLive('${sid}','${k}')">
+    <input type="text" data-beam-value="${esc(k)}" aria-label="${esc(label)}の値" value="${esc(beamInputValue(b,k,val))}" enterkeyhint="done" spellcheck="false" onchange="beamSetMaybeSymbol('${sid}','${k}',this.value)">
     <em>${esc(unit)}</em>
   </div></label>`;
 }
@@ -2748,14 +2877,14 @@ function beamFreeSvg(sid,c){
     ${marks}
   </svg>`;
 }
-function diagramSvg(title,c,key,unit,color,downPositive=false){
+function diagramSvg(title,c,key,unit,color,downPositive=false,anchor=""){
   const x0=50,x1=730,mid=92,amp=58,L=c.b.L;
   const max=Math.max(1e-9, Math.max(...c.pts.map(p=>Math.abs(p[key]))));
   const sx=x=>x0+(x1-x0)*x/L;
   const sy=v=>downPositive ? mid+(v/max)*amp : mid-(v/max)*amp;
   const pts=c.pts.map(p=>`${fmt(sx(p.x),2)},${fmt(sy(p[key]),2)}`).join(" ");
   const area=`${x0},${mid} ${pts} ${x1},${mid}`;
-  return `<div class="svgpanel"><div class="diagram-title"><b>${esc(title)}</b><span class="mini">${downPositive?"下向き + / ":""}max ${fmt(max,3)} ${esc(unit)}</span></div>
+  return `<section class="svgpanel beam-diagram beam-anchor"${anchor?` id="${esc(anchor)}"`:""}><div class="diagram-title"><b>${esc(title)}</b><span class="mini">${downPositive?"下向き + / ":""}max ${fmt(max,3)} ${esc(unit)}</span></div>
     <svg viewBox="0 0 760 176" role="img">
       <line x1="${x0}" y1="${mid}" x2="${x1}" y2="${mid}" stroke="var(--c-line)" stroke-width="1.5"/>
       <line x1="${x0}" y1="26" x2="${x0}" y2="150" stroke="var(--c-line)" stroke-width="1"/>
@@ -2763,7 +2892,7 @@ function diagramSvg(title,c,key,unit,color,downPositive=false){
       <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="3" stroke-linejoin="round"/>
       <text x="${x0}" y="166" fill="var(--c-sub)" font-size="12">0</text>
       <text x="${x1}" y="166" text-anchor="end" fill="var(--c-sub)" font-size="12">${fmt(L,1)}m</text>
-    </svg></div>`;
+    </svg></section>`;
 }
 function beamMetrics(c){
   const b=c.b;
@@ -2782,25 +2911,45 @@ function beamMetrics(c){
     <div class="metric"><span class="mini">最大たわみ</span><b>${fmt(c.yMax*1000,2)} mm</b><span class="mini">x=${fmt(c.yAt.x,2)} m</span></div>
   </div>${c.valid?"" : `<div class="warnbox">${esc(c.note)}</div>`}`;
 }
+function beamOverviewHtml(sid,b,c){
+  return `<div class="diagram-title"><b>荷重図・反力</b><span class="mini">${b.mode==="free"?"自由配置":`${b.support==="simple"?"単純ばり":"片持ちばり"} / ${b.load==="point"?"集中荷重":"等分布荷重"}`}</span></div>
+    <div class="svgpanel">${beamSvg(sid,c)}</div>
+    ${beamMetrics(c)}
+    <div class="beam-readout"><span class="tag">N図: 0</span><span class="tag">Q図: ${fmt(c.maxV,2)} kN</span><span class="tag">M図: ${fmt(c.maxM,2)} kN m</span></div>
+    <div class="beamnote">${b.mode==="free"?"自由配置は剛性法で不静定ばりまで計算します。力・分布荷重は下向き +、集中モーメントは時計回り + です。":"符号は下向き荷重で、片持ちばりの固定端側曲げを負側に描いています。"} たわみは入力した ${esc(b.EILabel||"EI")} による概算です。</div>`;
+}
+function beamDiagramsHtml(sid,c){
+  return `${diagramSvg("N図(軸力)",c,"N","kN","var(--c-sub)",false,`beam-n-${sid}`)}
+    ${diagramSvg("Q図(せん断力)",c,"V","kN","#2563eb",true,`beam-q-${sid}`)}
+    ${diagramSvg("M図(曲げモーメント)",c,"M","kN m","#d97706",true,`beam-m-${sid}`)}
+    ${diagramSvg("たわみ概形",c,"Y","m","#16a34a",true,`beam-y-${sid}`)}`;
+}
+function beamRenderOutput(sid){
+  const output=document.getElementById(`beam-load-${sid}`);
+  const diagrams=document.getElementById(`beam-diagrams-${sid}`);
+  if(!output || !diagrams) return;
+  const b=beamState(sid), c=beamCalc(b);
+  output.innerHTML=beamOverviewHtml(sid,b,c);
+  diagrams.innerHTML=beamDiagramsHtml(sid,c);
+  output.dataset.updateCount=String(Number(output.dataset.updateCount||0)+1);
+}
 function beamLab(sid){
   if(!sid.startsWith("kozo")) return subject(sid);
   const d=DATA[sid], b=beamState(sid), c=beamCalc(b);
-  app.innerHTML=`<div class="topbar"><button class="ghost" onclick="nav('s/${sid}')">←</button>
+  app.innerHTML=`<div class="topbar appbar"><button class="ghost" onclick="nav('s/${sid}')">←</button>
     <div><b>構造図シミュレータ</b><div class="crumb">${esc(d.name)}</div></div><span class="spacer"></span><button onclick="nav('s/${sid}/sheet')">直前モード</button></div>
+    <nav class="beam-mobile-nav" aria-label="シミュレータ内の移動">
+      <button type="button" onclick="beamScrollTo('${sid}','input')">入力</button>
+      <button type="button" onclick="beamScrollTo('${sid}','load')">荷重</button>
+      <button type="button" onclick="beamScrollTo('${sid}','q')">Q</button>
+      <button type="button" onclick="beamScrollTo('${sid}','m')">M</button>
+      <button type="button" onclick="beamScrollTo('${sid}','y')">たわみ</button>
+    </nav>
     <div class="simgrid">
-      <section class="card simcontrols"><b>入力</b>${beamControls(sid)}</section>
-      <section class="card">
-        <div class="diagram-title"><b>荷重図・反力</b><span class="mini">${b.mode==="free"?"自由配置":`${b.support==="simple"?"単純ばり":"片持ちばり"} / ${b.load==="point"?"集中荷重":"等分布荷重"}`}</span></div>
-        <div class="svgpanel">${beamSvg(sid,c)}</div>
-        ${beamMetrics(c)}
-        <div class="beam-readout"><span class="tag">N図: 0</span><span class="tag">Q図: ${fmt(c.maxV,2)} kN</span><span class="tag">M図: ${fmt(c.maxM,2)} kN m</span></div>
-        <div class="beamnote">${b.mode==="free"?"自由配置は剛性法で不静定ばりまで計算します。力・分布荷重は下向き +、集中モーメントは時計回り + です。":"符号は下向き荷重で、片持ちばりの固定端側曲げを負側に描いています。"} たわみは入力した ${esc(b.EILabel||"EI")} による概算です。</div>
-      </section>
+      <section class="card simcontrols beam-anchor" id="beam-input-${sid}"><b>入力</b>${beamControls(sid)}</section>
+      <section class="card beam-output-card beam-anchor beam-live-region" id="beam-load-${sid}">${beamOverviewHtml(sid,b,c)}</section>
     </div>
-    ${diagramSvg("N図(軸力)",c,"N","kN","var(--c-sub)")}
-    ${diagramSvg("Q図(せん断力)",c,"V","kN","#2563eb",true)}
-    ${diagramSvg("M図(曲げモーメント)",c,"M","kN m","#d97706",true)}
-    ${diagramSvg("たわみ概形",c,"Y","m","#16a34a",true)}`;
+    <div class="beam-live-region" id="beam-diagrams-${sid}">${beamDiagramsHtml(sid,c)}</div>`;
 }
 
 
